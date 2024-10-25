@@ -11,15 +11,21 @@ datasource db {
 }
 
 model User {
-  id              Int      @id @default(autoincrement())
-  email           String   @unique
+  id              Int         @id @default(autoincrement())
+  email           String      @unique
   name            String?
+  wallet_address  String
   password        String
-  role            Role     @default(USER)
-  isEmailVerified Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  role            Role        @default(USER)
+  isEmailVerified Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
   Token           Token[]
+  threads         Thread[]
+  events          Event[]
+  Community       Community[]
+
+  subscribedCommunities Community[] @relation("UserSubscribedCommunities")
 }
 
 model Token {
@@ -33,9 +39,69 @@ model Token {
   userId      Int
 }
 
+model Community {
+  id          Int    @id @default(autoincrement())
+  unique_id   String @default(uuid())
+  name        String
+  description String
+
+  // Events 
+  events Event[]
+
+  // Created By 
+  user   User @relation(fields: [userID], references: [id])
+  userID Int
+
+  // members
+  members User[] @relation("UserSubscribedCommunities")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  unique_id   String   @default(uuid())
+  title       String
+  description String
+  expiry_date DateTime
+
+  status EventStatus @default(ACTIVE)
+
+  // To community
+  community   Community @relation(fields: [communityID], references: [id])
+  communityID Int
+
+  // created by
+  user   User @relation(fields: [userID], references: [id])
+  userID Int
+
+  // Threads
+  threads   Thread[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Thread {
+  id        Int    @id @default(autoincrement())
+  unique_id String @default(uuid())
+  message   String
+
+  // Event ID
+  event   Event @relation(fields: [eventID], references: [id])
+  eventID Int
+
+  // User id
+  user   User? @relation(fields: [userID], references: [id])
+  userID Int?
+
+  createdAt DateTime @default(now())
+}
+
 enum Role {
-  USER
   ADMIN
+  USER
+  VOTERS
 }
 
 enum TokenType {
@@ -43,4 +109,10 @@ enum TokenType {
   REFRESH
   RESET_PASSWORD
   VERIFY_EMAIL
+}
+
+enum EventStatus {
+  ACTIVE
+  EXPIRED
+  CLOSED
 }

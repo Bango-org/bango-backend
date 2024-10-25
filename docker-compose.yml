@@ -1,17 +1,17 @@
 version: '3.8'
 
 services:
-  node-app:
-    build: .
-    image: node-app
-    ports:
-      - '3000:3000'
-    depends_on:
-      - postgresdb
-    volumes:
-      - .:/usr/src/node-app
-    networks:
-      - node-network
+  # node-app:
+  #   build: .
+  #   image: node-app
+  #   ports:
+  #     - '3000:3000'
+  #   depends_on:
+  #     - postgresdb
+  #   volumes:
+  #     - .:/usr/src/node-app
+  #   networks:
+  #     - node-network
 
   postgresdb:
     image: postgres
