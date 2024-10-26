@@ -2,8 +2,10 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
+
 
 datasource db {
   provider = "postgresql"
@@ -23,9 +25,7 @@ model User {
   Token           Token[]
   threads         Thread[]
   events          Event[]
-  Community       Community[]
 
-  subscribedCommunities Community[] @relation("UserSubscribedCommunities")
 }
 
 model Token {
@@ -39,25 +39,6 @@ model Token {
   userId      Int
 }
 
-model Community {
-  id          Int    @id @default(autoincrement())
-  unique_id   String @default(uuid())
-  name        String
-  description String
-
-  // Events 
-  events Event[]
-
-  // Created By 
-  user   User @relation(fields: [userID], references: [id])
-  userID Int
-
-  // members
-  members User[] @relation("UserSubscribedCommunities")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
 
 model Event {
   id          Int      @id @default(autoincrement())
@@ -69,8 +50,7 @@ model Event {
   status EventStatus @default(ACTIVE)
 
   // To community
-  community   Community @relation(fields: [communityID], references: [id])
-  communityID Int
+  community  String[]
 
   // created by
   user   User @relation(fields: [userID], references: [id])

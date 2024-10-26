@@ -51,9 +51,12 @@ export default router;
  *             required:
  *               - name
  *               - email
+ *               - wallet_address
  *               - password
  *             properties:
  *               name:
+ *                 type: string
+ *               waleet_address:
  *                 type: string
  *               email:
  *                 type: string
@@ -67,6 +70,7 @@ export default router;
  *             example:
  *               name: fake name
  *               email: fake@example.com
+ *               wallet_address: 0xalskjdopripori
  *               password: password1
  *     responses:
  *       "201":

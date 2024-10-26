@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import moment, { Moment } from 'moment';
-import httpStatus from 'http-status';
+import { StatusCodes } from 'http-status-codes';
 import config from '../config/config';
 import userService from './user.service';
 import ApiError from '../utils/ApiError';
@@ -110,7 +110,7 @@ const generateAuthTokens = async (user: { id: number }): Promise<AuthTokensRespo
 const generateResetPasswordToken = async (email: string): Promise<string> => {
   const user = await userService.getUserByEmail(email);
   if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'No users found with this email');
+    throw new ApiError(StatusCodes.NOT_FOUND, 'No users found with this email');
   }
   const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
   const resetPasswordToken = generateToken(user.id as number, expires, TokenType.RESET_PASSWORD);

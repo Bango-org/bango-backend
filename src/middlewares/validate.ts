@@ -1,4 +1,4 @@
-import httpStatus from 'http-status';
+import { StatusCodes } from 'http-status-codes';
 import ApiError from '../utils/ApiError';
 import { NextFunction, Request, Response } from 'express';
 import pick from '../utils/pick';
@@ -12,7 +12,7 @@ const validate = (schema: object) => (req: Request, res: Response, next: NextFun
     .validate(obj);
   if (error) {
     const errorMessage = error.details.map((details) => details.message).join(', ');
-    return next(new ApiError(httpStatus.BAD_REQUEST, errorMessage));
+    return next(new ApiError(StatusCodes.BAD_REQUEST, errorMessage));
   }
   Object.assign(req, value);
   return next();

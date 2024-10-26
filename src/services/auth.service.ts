@@ -1,4 +1,4 @@
-import httpStatus from 'http-status';
+import { StatusCodes } from 'http-status-codes';
 import tokenService from './token.service';
 import userService from './user.service';
 import ApiError from '../utils/ApiError';
@@ -22,6 +22,7 @@ const loginUserWithEmailAndPassword = async (
     'id',
     'email',
     'name',
+    'wallet_address',
     'password',
     'role',
     'isEmailVerified',
@@ -29,7 +30,7 @@ const loginUserWithEmailAndPassword = async (
     'updatedAt'
   ]);
   if (!user || !(await isPasswordMatch(password, user.password as string))) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
+    throw new ApiError(StatusCodes.UNAUTHORIZED, 'Incorrect email or password');
   }
   return exclude(user, ['password']);
 };
@@ -48,7 +49,7 @@ const logout = async (refreshToken: string): Promise<void> => {
     }
   });
   if (!refreshTokenData) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Not found');
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Not found');
   }
   await prisma.token.delete({ where: { id: refreshTokenData.id } });
 };
@@ -65,7 +66,7 @@ const refreshAuth = async (refreshToken: string): Promise<AuthTokensResponse> =>
     await prisma.token.delete({ where: { id: refreshTokenData.id } });
     return tokenService.generateAuthTokens({ id: userId });
   } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate');
+    throw new ApiError(StatusCodes.UNAUTHORIZED, 'Please authenticate');
   }
 };
 
@@ -89,7 +90,7 @@ const resetPassword = async (resetPasswordToken: string, newPassword: string): P
     await userService.updateUserById(user.id, { password: encryptedPassword });
     await prisma.token.deleteMany({ where: { userId: user.id, type: TokenType.RESET_PASSWORD } });
   } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Password reset failed');
+    throw new ApiError(StatusCodes.UNAUTHORIZED, 'Password reset failed');
   }
 };
 
@@ -109,7 +110,7 @@ const verifyEmail = async (verifyEmailToken: string): Promise<void> => {
     });
     await userService.updateUserById(verifyEmailTokenData.userId, { isEmailVerified: true });
   } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Email verification failed');
+    throw new ApiError(StatusCodes.UNAUTHORIZED, 'Email verification failed');
   }
 };
 

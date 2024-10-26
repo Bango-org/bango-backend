@@ -3,7 +3,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import cors from 'cors';
 import passport from 'passport';
-import httpStatus from 'http-status';
+import { StatusCodes } from 'http-status-codes';
 import config from './config/config';
 import morgan from './config/morgan';
 import xss from './middlewares/xss';
@@ -53,7 +53,7 @@ app.use('/v1', routes);
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
-  next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
+  next(new ApiError(StatusCodes.NOT_FOUND, 'Not found'));
 });
 
 // convert error to ApiError, if needed

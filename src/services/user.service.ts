@@ -1,5 +1,5 @@
 import { User, Role, Prisma } from '@prisma/client';
-import httpStatus from 'http-status';
+import { StatusCodes } from 'http-status-codes';
 import prisma from '../client';
 import ApiError from '../utils/ApiError';
 import { encryptPassword } from '../utils/encryption';
@@ -12,16 +12,18 @@ import { encryptPassword } from '../utils/encryption';
 const createUser = async (
   email: string,
   password: string,
+  wallet_address: string,
   name?: string,
   role: Role = Role.USER
 ): Promise<User> => {
   if (await getUserByEmail(email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already taken');
   }
   return prisma.user.create({
     data: {
       email,
       name,
+      wallet_address,
       password: await encryptPassword(password),
       role
     }
@@ -133,10 +135,10 @@ const updateUserById = async <Key extends keyof User>(
 ): Promise<Pick<User, Key> | null> => {
   const user = await getUserById(userId, ['id', 'email', 'name']);
   if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
   }
   if (updateBody.email && (await getUserByEmail(updateBody.email as string))) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already taken');
   }
   const updatedUser = await prisma.user.update({
     where: { id: user.id },
@@ -154,7 +156,7 @@ const updateUserById = async <Key extends keyof User>(
 const deleteUserById = async (userId: number): Promise<User> => {
   const user = await getUserById(userId);
   if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
   }
   await prisma.user.delete({ where: { id: user.id } });
   return user;
