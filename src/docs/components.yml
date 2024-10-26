@@ -18,6 +18,40 @@ components:
         email: fake@example.com
         name: fake name
         role: USER
+    
+    Event:
+      type: object 
+      properties:
+        id:
+          type: number
+        unique_id:
+          type: string
+        title:
+          type: string
+        expiry_date:
+          type: string
+          format: date
+        userId:
+          type: number
+        community:
+          type: array
+          items:
+            type: string
+        status:
+          type: boolean
+          enum: [ACTIVE, EXPIRED, CLOSED]
+        createdAt:
+          type: date
+        updatedAt:
+          type: date
+          # enum: [USER, ADMIN]
+      example:
+        id: 1
+        unique_id: uidstr
+        title: Will Kamla Haris win ?
+        status: ACTIVE
+        createdAt: 2023-10-26T15:30:00Z
+        updatedAt: 2023-10-26T15:30:00Z
 
     Token:
       type: object

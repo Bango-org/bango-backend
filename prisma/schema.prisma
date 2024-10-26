@@ -6,26 +6,24 @@ generator client {
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id              Int         @id @default(autoincrement())
-  email           String      @unique
+  id              Int      @id @default(autoincrement())
+  email           String   @unique
   name            String?
-  wallet_address  String
+  wallet_address  String   @unique
   password        String
-  role            Role        @default(USER)
-  isEmailVerified Boolean     @default(false)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  role            Role     @default(USER)
+  isEmailVerified Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
   Token           Token[]
   threads         Thread[]
   events          Event[]
-
 }
 
 model Token {
@@ -39,7 +37,6 @@ model Token {
   userId      Int
 }
 
-
 model Event {
   id          Int      @id @default(autoincrement())
   unique_id   String   @default(uuid())
@@ -50,7 +47,7 @@ model Event {
   status EventStatus @default(ACTIVE)
 
   // To community
-  community  String[]
+  community String[]
 
   // created by
   user   User @relation(fields: [userID], references: [id])
