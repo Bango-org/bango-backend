@@ -3,7 +3,9 @@ import authRoute from './auth.route';
 import userRoute from './user.route';
 import docsRoute from './docs.route';
 import eventRoute from './event.route';
+import threadRoute from './thread.route';
 import config from '../../config/config';
+import path from 'path';
 
 const router = express.Router();
 
@@ -19,6 +21,10 @@ const defaultRoutes = [
   {
     path: '/events',
     route: eventRoute
+  },
+  {
+    path: "/threads",
+    route: threadRoute
   }
 ];
 

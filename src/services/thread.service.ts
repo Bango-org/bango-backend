@@ -1,18 +1,16 @@
-import { EventStatus, Prisma, Event } from '@prisma/client';
+import { EventStatus, Prisma, Event, Thread } from '@prisma/client';
 import prisma from '../client';
 
 /**
- * Create a Event
- * @param {Object} eventBody
- * @returns {Promise<Event>}
+ * Create a Thread
+ * @param {Object} threadBody
+ * @returns {Promise<Thread>}
  */
-const createEvent = async (
-    title: string,
-    description: string,
-    expiry_date: Date,
-    community: string[],
+const createThread = async (
+    message: string,
+    eventID: number,
     wallet_address: string,
-): Promise<Event> => {
+): Promise<Thread> => {
 
     let usr = await prisma.user.findUnique({
         where: {
@@ -20,20 +18,17 @@ const createEvent = async (
         }
     })
 
-    return prisma.event.create({
+    return prisma.thread.create({
         data: {
-            title,
-            description,
-            expiry_date,
-            community,
-            userID: usr?.id!,
-            status: EventStatus.ACTIVE
+            message,
+            eventID,
+            userID: usr?.id
         }
     });
 };
 
 /**
- * Query for Event
+ * Query for Threads
  * @param {Object} filter - Prisma filter
  * @param {Object} options - Query options
  * @param {string} [options.sortBy] - Sort option in the format: sortField:(desc|asc)
@@ -41,7 +36,7 @@ const createEvent = async (
  * @param {number} [options.page] - Current page (default = 1)
  * @returns {Promise<QueryResult>}
  */
-const queryEvents = async <Key extends keyof Event>(
+const queryTreads = async <Key extends keyof Thread>(
     filter: object,
     options: {
         limit?: number;
@@ -52,56 +47,52 @@ const queryEvents = async <Key extends keyof Event>(
     keys: Key[] = [
         'id',
         'unique_id',
-        'title',
-        'expiry_date',
+        'message',
+        'eventID',
         'userID',
         'createdAt',
-        'updatedAt'
     ] as Key[]
-): Promise<Pick<Event, Key>[]> => {
+): Promise<Pick<Thread, Key>[]> => {
     const page = options.page ?? 1;
     const limit = options.limit ?? 10;
     const sortBy = options.sortBy;
     const sortType = options.sortType ?? 'desc';
-    const events = await prisma.event.findMany({
+    const threads = await prisma.thread.findMany({
         where: filter,
         select: keys.reduce((obj, k) => ({ ...obj, [k]: true }), {}),
         skip: (page - 1) * limit,
         take: limit,
         orderBy: sortBy ? { [sortBy]: sortType } : undefined
     });
-    return events as Pick<Event, Key>[];
+    return threads as Pick<Thread, Key>[];
 };
 
 /**
- * Get event by id
+ * Get Thread by id
  * @param {ObjectId} id
  * @param {Array<Key>} keys
  * @returns {Promise<Pick<Event, Key> | null>}
  */
-const getEventById = async <Key extends keyof Event>(
+const getThreadById = async <Key extends keyof Thread>(
     id: number,
     keys: Key[] = [
         'id',
         'unique_id',
-        'title',
-        'expiry_date',
+        'message',
+        'eventID',
         'userID',
-        'community',
-        'status',
-        'createdAt',
-        'updatedAt'
+        'createdAt'
     ] as Key[]
-): Promise<Pick<Event, Key> | null> => {
-    return prisma.event.findUnique({
+): Promise<Pick<Thread, Key> | null> => {
+    return prisma.thread.findUnique({
         where: { id },
         select: keys.reduce((obj, k) => ({ ...obj, [k]: true }), {})
-    }) as Promise<Pick<Event, Key> | null>;
+    }) as Promise<Pick<Thread, Key> | null>;
 };
 
 
 export default {
-    createEvent,
-    queryEvents,
-    getEventById
+    createThread,
+    queryTreads,
+    getThreadById
 };
