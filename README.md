@@ -1,12 +1,7 @@
 # Bango Backend
 
-1. Wallet connect
-    - User Registed = 200 with auth token 
-    - User Not registered = 201 with random username 
-    - Signature Error = 401
 
-
-2. Profile Page
+1. Profile Page
     - Profile Pic
     - All the Transations 
     - All the Events Participated 
@@ -15,11 +10,6 @@
     - User about 
     - Wallet address 
 
-3. Events 
-    - Outcomes op1 op2 string 
-    - Image only 1
-    - Resolution Crieteria - Text Field
+2. Change Harcode messageXsignature verification to timestamp one 
+   User will address and timestamp with bango hardocde string, we will verify if timestamp is more than 1 min old then reject auth
 
-4. Threads
-    - Text message
-    - Image

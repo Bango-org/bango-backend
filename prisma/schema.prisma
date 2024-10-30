@@ -23,6 +23,7 @@ model User {
   Token          Token[]
   threads        Thread[]
   events         Event[]
+  trades         Trade[]
 }
 
 model Token {
@@ -37,11 +38,15 @@ model Token {
 }
 
 model Event {
-  id          Int      @id @default(autoincrement())
-  unique_id   String   @default(uuid())
-  title       String
-  description String
-  expiry_date DateTime
+  id                  Int      @id @default(autoincrement())
+  unique_id           String   @default(uuid())
+  question            String
+  description         String
+  expiry_date         DateTime
+  optionA             String
+  optionB             String
+  resolution_criteria String   @db.Text
+  image               String
 
   status EventStatus @default(ACTIVE)
 
@@ -53,7 +58,32 @@ model Event {
   userID Int
 
   // Threads
-  threads   Thread[]
+  threads Thread[]
+
+  // Trades done
+  trades Trade[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Trade {
+  id        Int    @id @default(autoincrement())
+  unique_id String @default(uuid())
+
+  option     EventOption @default(OPTION_A)
+  order_type OrderType   @default(BUY)
+  order_size Int
+  amount     Int
+
+  // Trade happened on
+  event   Event @relation(fields: [eventID], references: [id])
+  eventID Int
+
+  // Trade done by
+  user   User? @relation(fields: [userID], references: [id])
+  userID Int?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -62,6 +92,7 @@ model Thread {
   id        Int    @id @default(autoincrement())
   unique_id String @default(uuid())
   message   String
+  image     String
 
   // Event ID
   event   Event @relation(fields: [eventID], references: [id])
@@ -91,4 +122,14 @@ enum EventStatus {
   ACTIVE
   EXPIRED
   CLOSED
+}
+
+enum EventOption {
+  OPTION_A
+  OPTION_B
+}
+
+enum OrderType {
+  BUY
+  SELL
 }

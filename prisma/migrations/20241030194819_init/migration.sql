@@ -7,14 +7,20 @@ CREATE TYPE "TokenType" AS ENUM ('ACCESS', 'REFRESH', 'RESET_PASSWORD', 'VERIFY_
 -- CreateEnum
 CREATE TYPE "EventStatus" AS ENUM ('ACTIVE', 'EXPIRED', 'CLOSED');
 
+-- CreateEnum
+CREATE TYPE "EventOption" AS ENUM ('OPTION_A', 'OPTION_B');
+
+-- CreateEnum
+CREATE TYPE "OrderType" AS ENUM ('BUY', 'SELL');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
-    "email" TEXT NOT NULL,
-    "name" TEXT,
-    "password" TEXT NOT NULL,
+    "username" TEXT NOT NULL,
+    "about" TEXT NOT NULL,
+    "wallet_address" TEXT NOT NULL,
     "role" "Role" NOT NULL DEFAULT 'USER',
-    "isEmailVerified" BOOLEAN NOT NULL DEFAULT false,
+    "profile_pic" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -35,27 +41,18 @@ CREATE TABLE "Token" (
 );
 
 -- CreateTable
-CREATE TABLE "Community" (
-    "id" SERIAL NOT NULL,
-    "unique_id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "userID" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Community_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Event" (
     "id" SERIAL NOT NULL,
     "unique_id" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
+    "question" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "expiry_date" TIMESTAMP(3) NOT NULL,
+    "optionA" TEXT NOT NULL,
+    "optionB" TEXT NOT NULL,
+    "resolution_criteria" TEXT NOT NULL,
+    "image" TEXT NOT NULL,
     "status" "EventStatus" NOT NULL DEFAULT 'ACTIVE',
-    "communityID" INTEGER NOT NULL,
+    "community" TEXT[],
     "userID" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -64,10 +61,27 @@ CREATE TABLE "Event" (
 );
 
 -- CreateTable
+CREATE TABLE "Trade" (
+    "id" SERIAL NOT NULL,
+    "unique_id" TEXT NOT NULL,
+    "option" "EventOption" NOT NULL DEFAULT 'OPTION_A',
+    "order_type" "OrderType" NOT NULL DEFAULT 'BUY',
+    "order_size" INTEGER NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "eventID" INTEGER NOT NULL,
+    "userID" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Trade_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Thread" (
     "id" SERIAL NOT NULL,
     "unique_id" TEXT NOT NULL,
     "message" TEXT NOT NULL,
+    "image" TEXT NOT NULL,
     "eventID" INTEGER NOT NULL,
     "userID" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -75,41 +89,26 @@ CREATE TABLE "Thread" (
     CONSTRAINT "Thread_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "_UserSubscribedCommunities" (
-    "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL
-);
+-- CreateIndex
+CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
-
--- CreateIndex
-CREATE UNIQUE INDEX "_UserSubscribedCommunities_AB_unique" ON "_UserSubscribedCommunities"("A", "B");
-
--- CreateIndex
-CREATE INDEX "_UserSubscribedCommunities_B_index" ON "_UserSubscribedCommunities"("B");
+CREATE UNIQUE INDEX "User_wallet_address_key" ON "User"("wallet_address");
 
 -- AddForeignKey
 ALTER TABLE "Token" ADD CONSTRAINT "Token_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Community" ADD CONSTRAINT "Community_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Event" ADD CONSTRAINT "Event_communityID_fkey" FOREIGN KEY ("communityID") REFERENCES "Community"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Trade" ADD CONSTRAINT "Trade_eventID_fkey" FOREIGN KEY ("eventID") REFERENCES "Event"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Trade" ADD CONSTRAINT "Trade_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Thread" ADD CONSTRAINT "Thread_eventID_fkey" FOREIGN KEY ("eventID") REFERENCES "Event"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Thread" ADD CONSTRAINT "Thread_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_UserSubscribedCommunities" ADD CONSTRAINT "_UserSubscribedCommunities_A_fkey" FOREIGN KEY ("A") REFERENCES "Community"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_UserSubscribedCommunities" ADD CONSTRAINT "_UserSubscribedCommunities_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
