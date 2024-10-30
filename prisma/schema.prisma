@@ -12,18 +12,17 @@ datasource db {
 }
 
 model User {
-  id              Int      @id @default(autoincrement())
-  email           String   @unique
-  name            String?
-  wallet_address  String   @unique
-  password        String
-  role            Role     @default(USER)
-  isEmailVerified Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  Token           Token[]
-  threads         Thread[]
-  events          Event[]
+  id             Int      @id @default(autoincrement())
+  username       String   @unique
+  about          String   @db.Text
+  wallet_address String   @unique
+  role           Role     @default(USER)
+  profile_pic    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  Token          Token[]
+  threads        Thread[]
+  events         Event[]
 }
 
 model Token {

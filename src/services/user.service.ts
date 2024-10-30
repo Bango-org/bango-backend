@@ -4,31 +4,31 @@ import prisma from '../client';
 import ApiError from '../utils/ApiError';
 import { encryptPassword } from '../utils/encryption';
 
-/**
- * Create a user
- * @param {Object} userBody
- * @returns {Promise<User>}
- */
-const createUser = async (
-  email: string,
-  password: string,
-  wallet_address: string,
-  name?: string,
-  role: Role = Role.USER
-): Promise<User> => {
-  if (await getUserByEmail(email)) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already taken');
-  }
-  return prisma.user.create({
-    data: {
-      email,
-      name,
-      wallet_address,
-      password: await encryptPassword(password),
-      role
-    }
-  });
-};
+// /**
+//  * Create a user
+//  * @param {Object} userBody
+//  * @returns {Promise<User>}
+//  */
+// const createUser = async (
+//   email: string,
+//   password: string,
+//   wallet_address: string,
+//   name?: string,
+//   role: Role = Role.USER
+// ): Promise<User> => {
+//   if (await getUserByEmail(email)) {
+//     throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already taken');
+//   }
+//   return prisma.user.create({
+//     data: {
+//       email,
+//       name,
+//       wallet_address,
+//       password: await encryptPassword(password),
+//       role
+//     }
+//   });
+// };
 
 /**
  * Query for users
@@ -49,11 +49,10 @@ const queryUsers = async <Key extends keyof User>(
   },
   keys: Key[] = [
     'id',
-    'email',
-    'name',
-    'password',
-    'role',
-    'isEmailVerified',
+    'username',
+    'about',
+    'wallet_address',
+    'profile_pic',
     'createdAt',
     'updatedAt'
   ] as Key[]
@@ -82,11 +81,10 @@ const getUserById = async <Key extends keyof User>(
   id: number,
   keys: Key[] = [
     'id',
-    'email',
-    'name',
-    'password',
-    'role',
-    'isEmailVerified',
+    'username',
+    'about',
+    'wallet_address',
+    'profile_pic',
     'createdAt',
     'updatedAt'
   ] as Key[]
@@ -103,21 +101,20 @@ const getUserById = async <Key extends keyof User>(
  * @param {Array<Key>} keys
  * @returns {Promise<Pick<User, Key> | null>}
  */
-const getUserByEmail = async <Key extends keyof User>(
-  email: string,
+const getUserByAddress = async <Key extends keyof User>(
+  wallet_address: string,
   keys: Key[] = [
     'id',
-    'email',
-    'name',
-    'password',
-    'role',
-    'isEmailVerified',
+    'username',
+    'about',
+    'wallet_address',
+    'profile_pic',
     'createdAt',
     'updatedAt'
   ] as Key[]
 ): Promise<Pick<User, Key> | null> => {
   return prisma.user.findUnique({
-    where: { email },
+    where: { wallet_address },
     select: keys.reduce((obj, k) => ({ ...obj, [k]: true }), {})
   }) as Promise<Pick<User, Key> | null>;
 };
@@ -128,17 +125,14 @@ const getUserByEmail = async <Key extends keyof User>(
  * @param {Object} updateBody
  * @returns {Promise<User>}
  */
-const updateUserById = async <Key extends keyof User>(
-  userId: number,
+const updateUserByWalletAddress = async <Key extends keyof User>(
+  wallet_address: string,
   updateBody: Prisma.UserUpdateInput,
-  keys: Key[] = ['id', 'email', 'name', 'role'] as Key[]
+  keys: Key[] = ['id', 'about', 'profile_pic'] as Key[]
 ): Promise<Pick<User, Key> | null> => {
-  const user = await getUserById(userId, ['id', 'email', 'name']);
+  const user = await getUserByAddress(wallet_address);
   if (!user) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
-  }
-  if (updateBody.email && (await getUserByEmail(updateBody.email as string))) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already taken');
   }
   const updatedUser = await prisma.user.update({
     where: { id: user.id },
@@ -148,25 +142,25 @@ const updateUserById = async <Key extends keyof User>(
   return updatedUser as Pick<User, Key> | null;
 };
 
-/**
- * Delete user by id
- * @param {ObjectId} userId
- * @returns {Promise<User>}
- */
-const deleteUserById = async (userId: number): Promise<User> => {
-  const user = await getUserById(userId);
-  if (!user) {
-    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
-  }
-  await prisma.user.delete({ where: { id: user.id } });
-  return user;
-};
+// /**
+//  * Delete user by id
+//  * @param {ObjectId} userId
+//  * @returns {Promise<User>}
+//  */
+// const deleteUserById = async (userId: number): Promise<User> => {
+//   const user = await getUserById(userId);
+//   if (!user) {
+//     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
+//   }
+//   await prisma.user.delete({ where: { id: user.id } });
+//   return user;
+// };
 
 export default {
-  createUser,
+  // createUser,
   queryUsers,
   getUserById,
-  getUserByEmail,
-  updateUserById,
-  deleteUserById
+  getUserByAddress,
+  updateUserByWalletAddress,
+  // deleteUserById
 };

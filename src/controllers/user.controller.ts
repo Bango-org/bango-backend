@@ -4,21 +4,15 @@ import ApiError from '../utils/ApiError';
 import catchAsync from '../utils/catchAsync';
 import { userService } from '../services';
 
-const createUser = catchAsync(async (req, res) => {
-  const { email, password, name, role } = req.body;
-  const user = await userService.createUser(email, password, name, role);
-  res.status(StatusCodes.CREATED).send(user);
-});
-
 const getUsers = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['name', 'role']);
+  const filter = pick(req.query, ['username', 'wallet_address']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
   const result = await userService.queryUsers(filter, options);
   res.send(result);
 });
 
 const getUser = catchAsync(async (req, res) => {
-  const user = await userService.getUserById(req.params.userId);
+  const user = await userService.getUserById(req.params.wallet_address);
   if (!user) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
   }
@@ -26,19 +20,13 @@ const getUser = catchAsync(async (req, res) => {
 });
 
 const updateUser = catchAsync(async (req, res) => {
-  const user = await userService.updateUserById(req.params.userId, req.body);
+  const user = await userService.updateUserByWalletAddress(req.params.wallet_address, req.body);
   res.send(user);
 });
 
-const deleteUser = catchAsync(async (req, res) => {
-  await userService.deleteUserById(req.params.userId);
-  res.status(StatusCodes.NO_CONTENT).send();
-});
 
 export default {
-  createUser,
   getUsers,
   getUser,
   updateUser,
-  deleteUser
 };

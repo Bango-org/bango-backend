@@ -5,18 +5,23 @@ components:
       properties:
         id:
           type: string
-        email:
+        username:
           type: string
-          format: email
-        name:
+        about:
+          type: string
+        wallet_address:
+          type: string
+        profile_pic:
           type: string
         role:
           type: string
           enum: [USER, ADMIN]
       example:
         id: 5ebac534954b54139806c112
-        email: fake@example.com
-        name: fake name
+        username: TradeShark45
+        about: Professional Trader
+        wallet_address: 0xwtfisthisaddress
+        profile_pic: https://bloburl.com
         role: USER
     
     Event:
