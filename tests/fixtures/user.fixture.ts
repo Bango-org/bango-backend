@@ -11,7 +11,8 @@ export const userOne = {
   email: faker.internet.email().toLowerCase(),
   password,
   role: Role.USER,
-  isEmailVerified: false
+  isEmailVerified: false,
+  wallet_address: faker.string.uuid()
 };
 
 export const userTwo = {
@@ -19,7 +20,8 @@ export const userTwo = {
   email: faker.internet.email().toLowerCase(),
   password,
   role: Role.USER,
-  isEmailVerified: false
+  isEmailVerified: false,
+  wallet_address: faker.string.uuid()
 };
 
 export const admin = {
@@ -27,7 +29,8 @@ export const admin = {
   email: faker.internet.email().toLowerCase(),
   password,
   role: Role.ADMIN,
-  isEmailVerified: false
+  isEmailVerified: false,
+  wallet_address: faker.string.uuid()
 };
 
 export const insertUsers = async (users: Prisma.UserCreateManyInput[]) => {

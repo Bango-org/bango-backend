@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { faker } from '@faker-js/faker';
-import httpStatus from 'http-status';
+import { StatusCodes } from 'http-status-codes';
 import httpMocks from 'node-mocks-http';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
@@ -32,7 +32,7 @@ describe('Auth routes', () => {
       const res = await request(app)
         .post('/v1/auth/register')
         .send(newUser)
-        .expect(httpStatus.CREATED);
+        .expect(StatusCodes.CREATED);
 
       expect(res.body.user).not.toHaveProperty('password');
       expect(res.body.user).toEqual({
@@ -62,30 +62,30 @@ describe('Auth routes', () => {
     test('should return 400 error if email is invalid', async () => {
       newUser.email = 'invalidEmail';
 
-      await request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST);
+      await request(app).post('/v1/auth/register').send(newUser).expect(StatusCodes.BAD_REQUEST);
     });
 
     test('should return 400 error if email is already used', async () => {
       await insertUsers([userOne]);
       newUser.email = userOne.email;
 
-      await request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST);
+      await request(app).post('/v1/auth/register').send(newUser).expect(StatusCodes.BAD_REQUEST);
     });
 
     test('should return 400 error if password length is less than 8 characters', async () => {
       newUser.password = 'passwo1';
 
-      await request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST);
+      await request(app).post('/v1/auth/register').send(newUser).expect(StatusCodes.BAD_REQUEST);
     });
 
     test('should return 400 error if password does not contain both letters and numbers', async () => {
       newUser.password = 'password';
 
-      await request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST);
+      await request(app).post('/v1/auth/register').send(newUser).expect(StatusCodes.BAD_REQUEST);
 
       newUser.password = '11111111';
 
-      await request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST);
+      await request(app).post('/v1/auth/register').send(newUser).expect(StatusCodes.BAD_REQUEST);
     });
   });
 
@@ -100,7 +100,7 @@ describe('Auth routes', () => {
       const res = await request(app)
         .post('/v1/auth/login')
         .send(loginCredentials)
-        .expect(httpStatus.OK);
+        .expect(StatusCodes.OK);
 
       expect(res.body.user).toMatchObject({
         id: expect.anything(),
@@ -127,10 +127,10 @@ describe('Auth routes', () => {
       const res = await request(app)
         .post('/v1/auth/login')
         .send(loginCredentials)
-        .expect(httpStatus.UNAUTHORIZED);
+        .expect(StatusCodes.UNAUTHORIZED);
 
       expect(res.body).toEqual({
-        code: httpStatus.UNAUTHORIZED,
+        code: StatusCodes.UNAUTHORIZED,
         message: 'Incorrect email or password'
       });
     });
@@ -145,10 +145,10 @@ describe('Auth routes', () => {
       const res = await request(app)
         .post('/v1/auth/login')
         .send(loginCredentials)
-        .expect(httpStatus.UNAUTHORIZED);
+        .expect(StatusCodes.UNAUTHORIZED);
 
       expect(res.body).toEqual({
-        code: httpStatus.UNAUTHORIZED,
+        code: StatusCodes.UNAUTHORIZED,
         message: 'Incorrect email or password'
       });
     });
@@ -165,14 +165,14 @@ describe('Auth routes', () => {
       await request(app)
         .post('/v1/auth/logout')
         .send({ refreshToken })
-        .expect(httpStatus.NO_CONTENT);
+        .expect(StatusCodes.NO_CONTENT);
 
       const dbRefreshTokenData = await prisma.token.findFirst({ where: { token: refreshToken } });
       expect(dbRefreshTokenData).toBe(null);
     });
 
     test('should return 400 error if refresh token is missing from request body', async () => {
-      await request(app).post('/v1/auth/logout').send().expect(httpStatus.BAD_REQUEST);
+      await request(app).post('/v1/auth/logout').send().expect(StatusCodes.BAD_REQUEST);
     });
 
     test('should return 404 error if refresh token is not found in the database', async () => {
@@ -184,7 +184,7 @@ describe('Auth routes', () => {
       await request(app)
         .post('/v1/auth/logout')
         .send({ refreshToken })
-        .expect(httpStatus.NOT_FOUND);
+        .expect(StatusCodes.NOT_FOUND);
     });
 
     test('should return 404 error if refresh token is blacklisted', async () => {
@@ -197,7 +197,7 @@ describe('Auth routes', () => {
       await request(app)
         .post('/v1/auth/logout')
         .send({ refreshToken })
-        .expect(httpStatus.NOT_FOUND);
+        .expect(StatusCodes.NOT_FOUND);
     });
   });
 
@@ -212,7 +212,7 @@ describe('Auth routes', () => {
       const res = await request(app)
         .post('/v1/auth/refresh-tokens')
         .send({ refreshToken })
-        .expect(httpStatus.OK);
+        .expect(StatusCodes.OK);
 
       expect(res.body).toEqual({
         access: { token: expect.anything(), expires: expect.anything() },
@@ -238,7 +238,7 @@ describe('Auth routes', () => {
     });
 
     test('should return 400 error if refresh token is missing from request body', async () => {
-      await request(app).post('/v1/auth/refresh-tokens').send().expect(httpStatus.BAD_REQUEST);
+      await request(app).post('/v1/auth/refresh-tokens').send().expect(StatusCodes.BAD_REQUEST);
     });
 
     test('should return 401 error if refresh token is signed using an invalid secret', async () => {
@@ -256,7 +256,7 @@ describe('Auth routes', () => {
       await request(app)
         .post('/v1/auth/refresh-tokens')
         .send({ refreshToken })
-        .expect(httpStatus.UNAUTHORIZED);
+        .expect(StatusCodes.UNAUTHORIZED);
     });
 
     test('should return 401 error if refresh token is not found in the database', async () => {
@@ -268,7 +268,7 @@ describe('Auth routes', () => {
       await request(app)
         .post('/v1/auth/refresh-tokens')
         .send({ refreshToken })
-        .expect(httpStatus.UNAUTHORIZED);
+        .expect(StatusCodes.UNAUTHORIZED);
     });
 
     test('should return 401 error if refresh token is blacklisted', async () => {
@@ -281,7 +281,7 @@ describe('Auth routes', () => {
       await request(app)
         .post('/v1/auth/refresh-tokens')
         .send({ refreshToken })
-        .expect(httpStatus.UNAUTHORIZED);
+        .expect(StatusCodes.UNAUTHORIZED);
     });
 
     test('should return 401 error if refresh token is expired', async () => {
@@ -294,7 +294,7 @@ describe('Auth routes', () => {
       await request(app)
         .post('/v1/auth/refresh-tokens')
         .send({ refreshToken })
-        .expect(httpStatus.UNAUTHORIZED);
+        .expect(StatusCodes.UNAUTHORIZED);
     });
 
     // test('should return 401 error if user is not found', async () => {
@@ -305,7 +305,7 @@ describe('Auth routes', () => {
     //   await request(app)
     //     .post('/v1/auth/refresh-tokens')
     //     .send({ refreshToken })
-    //     .expect(httpStatus.UNAUTHORIZED);
+    //     .expect(StatusCodes.UNAUTHORIZED);
     // });
   });
 
@@ -324,7 +324,7 @@ describe('Auth routes', () => {
       await request(app)
         .post('/v1/auth/forgot-password')
         .send({ email: userOne.email })
-        .expect(httpStatus.NO_CONTENT);
+        .expect(StatusCodes.NO_CONTENT);
 
       expect(sendResetPasswordEmailSpy).toHaveBeenCalledWith(userOne.email, expect.any(String));
       const resetPasswordToken = sendResetPasswordEmailSpy.mock.calls[0][1];
@@ -340,14 +340,14 @@ describe('Auth routes', () => {
     test('should return 400 if email is missing', async () => {
       await insertUsers([userOne]);
 
-      await request(app).post('/v1/auth/forgot-password').send().expect(httpStatus.BAD_REQUEST);
+      await request(app).post('/v1/auth/forgot-password').send().expect(StatusCodes.BAD_REQUEST);
     });
 
     test('should return 404 if email does not belong to any user', async () => {
       await request(app)
         .post('/v1/auth/forgot-password')
         .send({ email: userOne.email })
-        .expect(httpStatus.NOT_FOUND);
+        .expect(StatusCodes.NOT_FOUND);
     });
   });
 
@@ -372,7 +372,7 @@ describe('Auth routes', () => {
         .post('/v1/auth/reset-password')
         .query({ token: resetPasswordToken })
         .send({ password: 'password2' })
-        .expect(httpStatus.NO_CONTENT);
+        .expect(StatusCodes.NO_CONTENT);
 
       const dbUser = (await prisma.user.findUnique({ where: { id: dbUserOne.id } })) as User;
       const isPasswordMatch = await bcrypt.compare('password2', dbUser.password);
@@ -393,7 +393,7 @@ describe('Auth routes', () => {
       await request(app)
         .post('/v1/auth/reset-password')
         .send({ password: 'password2' })
-        .expect(httpStatus.BAD_REQUEST);
+        .expect(StatusCodes.BAD_REQUEST);
     });
 
     test('should return 401 if reset password token is blacklisted', async () => {
@@ -417,7 +417,7 @@ describe('Auth routes', () => {
         .post('/v1/auth/reset-password')
         .query({ token: resetPasswordToken })
         .send({ password: 'password2' })
-        .expect(httpStatus.UNAUTHORIZED);
+        .expect(StatusCodes.UNAUTHORIZED);
     });
 
     test('should return 401 if reset password token is expired', async () => {
@@ -440,7 +440,7 @@ describe('Auth routes', () => {
         .post('/v1/auth/reset-password')
         .query({ token: resetPasswordToken })
         .send({ password: 'password2' })
-        .expect(httpStatus.UNAUTHORIZED);
+        .expect(StatusCodes.UNAUTHORIZED);
     });
 
     // test('should return 401 if user is not found', async () => {
@@ -461,7 +461,7 @@ describe('Auth routes', () => {
     //     .post('/v1/auth/reset-password')
     //     .query({ token: resetPasswordToken })
     //     .send({ password: 'password2' })
-    //     .expect(httpStatus.UNAUTHORIZED);
+    //     .expect(StatusCodes.UNAUTHORIZED);
     // });
 
     test('should return 400 if password is missing or invalid', async () => {
@@ -483,25 +483,25 @@ describe('Auth routes', () => {
       await request(app)
         .post('/v1/auth/reset-password')
         .query({ token: resetPasswordToken })
-        .expect(httpStatus.BAD_REQUEST);
+        .expect(StatusCodes.BAD_REQUEST);
 
       await request(app)
         .post('/v1/auth/reset-password')
         .query({ token: resetPasswordToken })
         .send({ password: 'short1' })
-        .expect(httpStatus.BAD_REQUEST);
+        .expect(StatusCodes.BAD_REQUEST);
 
       await request(app)
         .post('/v1/auth/reset-password')
         .query({ token: resetPasswordToken })
         .send({ password: 'password' })
-        .expect(httpStatus.BAD_REQUEST);
+        .expect(StatusCodes.BAD_REQUEST);
 
       await request(app)
         .post('/v1/auth/reset-password')
         .query({ token: resetPasswordToken })
         .send({ password: '11111111' })
-        .expect(httpStatus.BAD_REQUEST);
+        .expect(StatusCodes.BAD_REQUEST);
     });
   });
 
@@ -525,7 +525,7 @@ describe('Auth routes', () => {
       await request(app)
         .post('/v1/auth/send-verification-email')
         .set('Authorization', `Bearer ${userOneAccessToken}`)
-        .expect(httpStatus.NO_CONTENT);
+        .expect(StatusCodes.NO_CONTENT);
 
       expect(sendVerificationEmailSpy).toHaveBeenCalledWith(userOne.email, expect.any(String));
       const verifyEmailToken = sendVerificationEmailSpy.mock.calls[0][1];
@@ -545,7 +545,7 @@ describe('Auth routes', () => {
       await request(app)
         .post('/v1/auth/send-verification-email')
         .send()
-        .expect(httpStatus.UNAUTHORIZED);
+        .expect(StatusCodes.UNAUTHORIZED);
     });
   });
 
@@ -565,7 +565,7 @@ describe('Auth routes', () => {
         .post('/v1/auth/verify-email')
         .query({ token: verifyEmailToken })
         .send()
-        .expect(httpStatus.NO_CONTENT);
+        .expect(StatusCodes.NO_CONTENT);
 
       const dbUser = (await prisma.user.findUnique({ where: { id: dbUserOne.id } })) as User;
 
@@ -583,7 +583,7 @@ describe('Auth routes', () => {
     test('should return 400 if verify email token is missing', async () => {
       await insertUsers([userOne]);
 
-      await request(app).post('/v1/auth/verify-email').send().expect(httpStatus.BAD_REQUEST);
+      await request(app).post('/v1/auth/verify-email').send().expect(StatusCodes.BAD_REQUEST);
     });
 
     test('should return 401 if verify email token is blacklisted', async () => {
@@ -607,7 +607,7 @@ describe('Auth routes', () => {
         .post('/v1/auth/verify-email')
         .query({ token: verifyEmailToken })
         .send()
-        .expect(httpStatus.UNAUTHORIZED);
+        .expect(StatusCodes.UNAUTHORIZED);
     });
 
     test('should return 401 if verify email token is expired', async () => {
@@ -625,7 +625,7 @@ describe('Auth routes', () => {
         .post('/v1/auth/verify-email')
         .query({ token: verifyEmailToken })
         .send()
-        .expect(httpStatus.UNAUTHORIZED);
+        .expect(StatusCodes.UNAUTHORIZED);
     });
 
     // test('should return 401 if user is not found', async () => {
@@ -641,7 +641,7 @@ describe('Auth routes', () => {
     //     .post('/v1/auth/verify-email')
     //     .query({ token: verifyEmailToken })
     //     .send()
-    //     .expect(httpStatus.UNAUTHORIZED);
+    //     .expect(StatusCodes.UNAUTHORIZED);
     // });
   });
 });
@@ -676,7 +676,7 @@ describe('Auth middleware', () => {
     expect(next).toHaveBeenCalledWith(expect.any(ApiError));
     expect(next).toHaveBeenCalledWith(
       expect.objectContaining({
-        statusCode: httpStatus.UNAUTHORIZED,
+        statusCode: StatusCodes.UNAUTHORIZED,
         message: 'Please authenticate'
       })
     );
@@ -692,7 +692,7 @@ describe('Auth middleware', () => {
     expect(next).toHaveBeenCalledWith(expect.any(ApiError));
     expect(next).toHaveBeenCalledWith(
       expect.objectContaining({
-        statusCode: httpStatus.UNAUTHORIZED,
+        statusCode: StatusCodes.UNAUTHORIZED,
         message: 'Please authenticate'
       })
     );
@@ -711,7 +711,7 @@ describe('Auth middleware', () => {
     expect(next).toHaveBeenCalledWith(expect.any(ApiError));
     expect(next).toHaveBeenCalledWith(
       expect.objectContaining({
-        statusCode: httpStatus.UNAUTHORIZED,
+        statusCode: StatusCodes.UNAUTHORIZED,
         message: 'Please authenticate'
       })
     );
@@ -735,7 +735,7 @@ describe('Auth middleware', () => {
     expect(next).toHaveBeenCalledWith(expect.any(ApiError));
     expect(next).toHaveBeenCalledWith(
       expect.objectContaining({
-        statusCode: httpStatus.UNAUTHORIZED,
+        statusCode: StatusCodes.UNAUTHORIZED,
         message: 'Please authenticate'
       })
     );
@@ -754,7 +754,7 @@ describe('Auth middleware', () => {
     expect(next).toHaveBeenCalledWith(expect.any(ApiError));
     expect(next).toHaveBeenCalledWith(
       expect.objectContaining({
-        statusCode: httpStatus.UNAUTHORIZED,
+        statusCode: StatusCodes.UNAUTHORIZED,
         message: 'Please authenticate'
       })
     );
@@ -776,7 +776,7 @@ describe('Auth middleware', () => {
     expect(next).toHaveBeenCalledWith(expect.any(ApiError));
     expect(next).toHaveBeenCalledWith(
       expect.objectContaining({
-        statusCode: httpStatus.UNAUTHORIZED,
+        statusCode: StatusCodes.UNAUTHORIZED,
         message: 'Please authenticate'
       })
     );
@@ -799,7 +799,7 @@ describe('Auth middleware', () => {
 
     expect(next).toHaveBeenCalledWith(expect.any(ApiError));
     expect(next).toHaveBeenCalledWith(
-      expect.objectContaining({ statusCode: httpStatus.FORBIDDEN, message: 'Forbidden' })
+      expect.objectContaining({ statusCode: StatusCodes.FORBIDDEN, message: 'Forbidden' })
     );
   });
 
