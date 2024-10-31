@@ -7,13 +7,12 @@ const createBlob = catchAsync(async (req, res) => {
     const image = req.file!;
 
     let result: UploadResult | null = null;
+    console.log(type);
 
-    switch (type){
-        case "users":
-            result = await users_blob_uploader.uploadImage(image.buffer, image.originalname)
-
-        case "threads":
-            result = await thread_blob_uploader.uploadImage(image.buffer, image.originalname)
+    if (type === "users") {
+        result = await users_blob_uploader.uploadImage(image.buffer, image.originalname)
+    } else {
+        result = await thread_blob_uploader.uploadImage(image.buffer, image.originalname)
     }
 
     if (result?.success === false) {
