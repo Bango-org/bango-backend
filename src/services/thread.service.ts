@@ -1,5 +1,6 @@
 import { EventStatus, Prisma, Event, Thread } from '@prisma/client';
 import prisma from '../client';
+import { GetThread } from '../types/response';
 
 /**
  * Create a Thread
@@ -10,7 +11,7 @@ const createThread = async (
     message: string,
     eventID: number,
     wallet_address: string,
-    image?: string,
+    image: string,
 ): Promise<Thread> => {
 
     let usr = await prisma.user.findUnique({
@@ -62,12 +63,21 @@ const queryTreads = async <Key extends keyof Thread>(
     const sortType = options.sortType ?? 'desc';
     const threads = await prisma.thread.findMany({
         where: filter,
-        select: keys.reduce((obj, k) => ({ ...obj, [k]: true }), {}),
+        select: {
+            ...keys.reduce((obj, k) => ({ ...obj, [k]: true }), {}),
+            user: {
+                select: {
+                    id: true,
+                    username: true,
+                    profile_pic: true
+                }
+            }
+        },
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: sortBy ? { [sortBy]: sortType } : undefined
+        orderBy: sortBy ? { [sortBy]: sortType } : undefined,
     });
-    return threads as Pick<Thread, Key>[];
+    return threads as unknown as Pick<Thread, Key>[];
 };
 
 /**

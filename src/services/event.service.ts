@@ -78,12 +78,20 @@ const queryEvents = async <Key extends keyof Event>(
     const sortType = options.sortType ?? 'desc';
     const events = await prisma.event.findMany({
         where: filter,
-        select: keys.reduce((obj, k) => ({ ...obj, [k]: true }), {}),
+        select: {
+            ...keys.reduce((obj, k) => ({ ...obj, [k]: true }), {}),
+            _count: {
+                select: {
+                    threads: true,
+                    trades: true
+                }
+            }
+        },
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: sortBy ? { [sortBy]: sortType } : undefined
+        orderBy: sortBy ? { [sortBy]: sortType } : undefined,
     });
-    return events as Pick<Event, Key>[];
+    return events as unknown as Pick<Event, Key>[];
 };
 
 /**

@@ -13,3 +13,7 @@
 2. Change Harcode messageXsignature verification to timestamp one 
    User will address and timestamp with bango hardocde string, we will verify if timestamp is more than 1 min old then reject auth
 
+
+
+3. Add discription in event
+4. Multi outcome architecture
