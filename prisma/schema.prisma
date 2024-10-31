@@ -43,8 +43,8 @@ model Event {
   question            String
   description         String
   expiry_date         DateTime
-  optionA             String
-  optionB             String
+  option_a            String
+  option_b            String
   resolution_criteria String   @db.Text
   image               String
 
@@ -92,7 +92,7 @@ model Thread {
   id        Int    @id @default(autoincrement())
   unique_id String @default(uuid())
   message   String
-  image     String
+  image     String?
 
   // Event ID
   event   Event @relation(fields: [eventID], references: [id])

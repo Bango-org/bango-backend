@@ -2,8 +2,12 @@ import Joi from 'joi';
 
 const createEvent = {
   body: Joi.object().keys({
-    title: Joi.string().required(),
+    question: Joi.string().required(),
     description: Joi.string().required(),
+    option_a: Joi.string().required(),
+    option_b: Joi.string().required(),
+    resolution_criteria: Joi.string().required(),
+    image: Joi.string().required(),
     expiry_date:Joi.date().required(),
     community: Joi.array().items(Joi.string().min(1))
   })
@@ -12,9 +16,10 @@ const createEvent = {
 const getEvents = {
   query: Joi.object().keys({
     id: Joi.number(),
-    unique_id: Joi.string(),
-    title: Joi.string(),
+    question: Joi.string(),
     expiry_date: Joi.date(),
+    community: Joi.array().items(Joi.string().min(1)),
+    userID: Joi.number(),
     updatedAt: Joi.date(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),

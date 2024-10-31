@@ -5,15 +5,15 @@ import catchAsync from '../utils/catchAsync';
 import { eventService } from '../services';
 
 const createEvent = catchAsync(async (req, res) => {
-    const { title, description, expiry_date, community } = req.body;
+    const { question, description, option_a, option_b, resolution_criteria, image, expiry_date, community } = req.body;
     let usr: any = req.user;
 
-    const event = await eventService.createEvent(title, description, expiry_date, community, usr.wallet_address);
+    const event = await eventService.createEvent(question, description, option_a, option_b, resolution_criteria, image, expiry_date, community, usr.wallet_address);
     res.status(StatusCodes.CREATED).send(event);
 });
 
 const getEvents = catchAsync(async (req, res) => {
-    const filter = pick(req.query, ['id', 'unique_id', 'title', 'expiry_date', 'userID', 'createdAt', 'updatedAt']);
+    const filter = pick(req.query, ['id', 'unique_id', 'question', 'expiry_date', 'userID', 'createdAt', 'updatedAt']);
     const options = pick(req.query, ['sortBy', 'limit', 'page']);
     const result = await eventService.queryEvents(filter, options);
     res.send(result);

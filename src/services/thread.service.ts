@@ -10,6 +10,7 @@ const createThread = async (
     message: string,
     eventID: number,
     wallet_address: string,
+    image?: string,
 ): Promise<Thread> => {
 
     let usr = await prisma.user.findUnique({
@@ -22,6 +23,7 @@ const createThread = async (
         data: {
             message,
             eventID,
+            image,
             userID: usr?.id
         }
     });
@@ -48,6 +50,7 @@ const queryTreads = async <Key extends keyof Thread>(
         'id',
         'unique_id',
         'message',
+        'image',
         'eventID',
         'userID',
         'createdAt',
@@ -79,6 +82,7 @@ const getThreadById = async <Key extends keyof Thread>(
         'id',
         'unique_id',
         'message',
+        'image',
         'eventID',
         'userID',
         'createdAt'

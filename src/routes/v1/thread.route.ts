@@ -47,9 +47,12 @@ export default router;
  *                 type: string
  *               eventID:
  *                 type: number
+ *               image: 
+ *                 type: string
  *             example:
  *               message: I think kamla will loose
  *               eventID: 1
+ *               image: https://urltoimageblob
  *     responses:
  *       "201":
  *         description: Created

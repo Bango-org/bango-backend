@@ -7,8 +7,12 @@ import prisma from '../client';
  * @returns {Promise<Event>}
  */
 const createEvent = async (
-    title: string,
+    question: string,
     description: string,
+    option_a: string,
+    option_b: string,
+    resolution_criteria: string,
+    image: string,
     expiry_date: Date,
     community: string[],
     wallet_address: string,
@@ -22,8 +26,12 @@ const createEvent = async (
 
     return prisma.event.create({
         data: {
-            title,
+            question,
             description,
+            option_a,
+            option_b,
+            resolution_criteria,
+            image,
             expiry_date,
             community,
             userID: usr?.id!,
@@ -52,9 +60,14 @@ const queryEvents = async <Key extends keyof Event>(
     keys: Key[] = [
         'id',
         'unique_id',
-        'title',
+        'question',
+        'description',
+        'option_a',
+        'option_b',
+        'resolution_criteria',
+        'image',
         'expiry_date',
-        'userID',
+        'community',
         'createdAt',
         'updatedAt'
     ] as Key[]
@@ -84,11 +97,14 @@ const getEventById = async <Key extends keyof Event>(
     keys: Key[] = [
         'id',
         'unique_id',
-        'title',
+        'question',
+        'description',
+        'option_a',
+        'option_b',
+        'resolution_criteria',
+        'image',
         'expiry_date',
-        'userID',
         'community',
-        'status',
         'createdAt',
         'updatedAt'
     ] as Key[]

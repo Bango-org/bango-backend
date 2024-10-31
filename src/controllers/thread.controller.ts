@@ -5,10 +5,10 @@ import catchAsync from '../utils/catchAsync';
 import { threadService } from '../services';
 
 const createThread = catchAsync(async (req, res) => {
-    const { message, eventID } = req.body;
+    const { message, eventID, image } = req.body;
     let usr: any = req.user;
 
-    const event = await threadService.createThread(message, eventID, usr.wallet_address);
+    const event = await threadService.createThread(message, eventID, usr.wallet_address, image);
     res.status(StatusCodes.CREATED).send(event);
 });
 

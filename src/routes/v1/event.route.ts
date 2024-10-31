@@ -40,24 +40,40 @@ export default router;
  *           schema:
  *             type: object
  *             required:
- *               - title
+ *               - question
  *               - description
+ *               - option_a
+ *               - option_b
+ *               - resolution_criteria
+ *               - image
  *               - expiry_date
  *               - community
  *             properties:
- *               title:
+ *               question:
  *                 type: string
  *               description:
+ *                 type: string
+ *               option_a:
+ *                 type: string
+ *               option_b:
+ *                 type: string
+ *               resolution_criteria:
+ *                 type: string
+ *               image:
  *                 type: string
  *               expiry_date:
  *                 type: string
  *                 format: date
- *               role:
+ *               community:
  *                 type: array
  *                 items: 
  *                   type: string
  *             example:
- *               title: will kamla haris win this election
+ *               question: will kamla haris win this election
+ *               option_a: Will Win
+ *               option_b: Will Loose
+ *               resolution_criteria: Resolution will be based on US election results
+ *               image: https://linktoimageblob
  *               description: lets see who will win
  *               expiry_date: 2023-10-26T15:30:00Z
  *               community: ['elections', 'kamla', 'USA']
@@ -87,6 +103,11 @@ export default router;
  *         schema:
  *           type: number
  *         description: Event ID
+ *       - in: query
+ *         name: userID
+ *         schema:
+ *           type: number
+ *         description: user ID
  *       - in: query
  *         name: unique_id
  *         schema:

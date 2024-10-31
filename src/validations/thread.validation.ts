@@ -3,7 +3,8 @@ import Joi from 'joi';
 const createThread = {
   body: Joi.object().keys({
     message: Joi.string().required(),
-    eventID: Joi.number().required()
+    eventID: Joi.number().required(),
+    image: Joi.string(),
   })
 };
 
