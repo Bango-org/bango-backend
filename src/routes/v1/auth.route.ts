@@ -45,7 +45,7 @@ export default router;
  *                 type: string
  *             example:
  *               walletAddress: "0x375C11FD30FdC95e10aAD66bdcE590E1bccc6aFA"
- *               signature: "0x557d87d0a092eb0cf61b254c66a87d68aca2c072a942c3dfa0431721a05ad40d2ed236dce395743a46cfc4a5dfc679cdd2c0f4be9f33a945c71c2a9f444595431b"
+ *               signature: "0xe1a2e9174cb8021fbc14bc7e272561572126ed23e97f2232d5ef2de44405291a73b746a5cc5ef82a927f95013dd1fc4393c44b89b8ed84e7a13f4cf922d845161c"
  *     responses:
  *       "200":
  *         description: OK

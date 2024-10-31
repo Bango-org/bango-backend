@@ -4,6 +4,8 @@ import userRoute from './user.route';
 import docsRoute from './docs.route';
 import eventRoute from './event.route';
 import threadRoute from './thread.route';
+import blobRoute from './blob.route';
+
 import config from '../../config/config';
 import path from 'path';
 
@@ -25,6 +27,10 @@ const defaultRoutes = [
   {
     path: "/threads",
     route: threadRoute
+  },
+  {
+    path: "/upload",
+    route: blobRoute
   }
 ];
 

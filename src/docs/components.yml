@@ -31,7 +31,15 @@ components:
           type: number
         unique_id:
           type: string
-        title:
+        question:
+          type: string
+        option_a:
+          type: string
+        option_b:
+          type: string
+        resolution_criteria:
+          type: string
+        image:
           type: string
         expiry_date:
           type: string
@@ -53,10 +61,59 @@ components:
       example:
         id: 1
         unique_id: uidstr
-        title: Will Kamla Haris win ?
+        question: Will Kamla Haris win ?
+        option_a: Will Win
+        option_b: Will Loose
+        resolution_criteria: Resolution will be based on US election results
+        image: https://linktoimageblob
+        expiry_date: 2023-10-26T15:30:00Z
+        community: ['elections', 'kamla', 'USA']
         status: ACTIVE
         createdAt: 2023-10-26T15:30:00Z
         updatedAt: 2023-10-26T15:30:00Z
+
+    Thread:
+      type: object 
+      properties:
+        id:
+          type: number
+        unique_id:
+          type: string
+        message:
+          type: string
+        image:
+          type: string
+        createdAt:
+          type: date
+      example:
+        id: 1
+        unique_id: uidstr
+        message: I am on Kamlas side
+        image: https://linktoimageblob
+        createdAt: 2023-10-26T15:30:00Z
+        updatedAt: 2023-10-26T15:30:00Z
+
+    Blob:
+      type: object 
+      properties:
+        success:
+          type: boolean
+        url:
+          type: string
+        message:
+          type: string
+        error:
+          type: string
+        blobName:
+          type: string
+      example:
+        success: true
+        url: https://bangostorageaccount.blob.core.windows.net/threads/1730372857266-b8d67aef-02b4-41b1-8424-c20e76fb52c0.png?sv=2022-11-02&ss=bfqt&srt=o&sp=rwdlacupiytfx&se=2024-10-31T18:23:54Z&st=2024-10-31T10:23:54Z&spr=https&sig=QCkZaxALBnS5WGjSdSaysvFnIS1%2B6AlGn5ZlTx1UjMg%3D
+        blobName: 1730372857266-b8d67aef-02b4-41b1-8424-c20e76fb52c0.png
+        message: ""
+        error: ""
+
+        
 
     Token:
       type: object
@@ -114,6 +171,15 @@ components:
           example:
             code: 403
             message: Forbidden
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 500
+            message: Internal Server Error
     NotFound:
       description: Not found
       content:
