@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../utils/catchAsync';
-import { thread_blob_uploader, UploadResult, users_blob_uploader } from '../utils/azure-blob';
+import { event_blob_uploader, thread_blob_uploader, UploadResult, users_blob_uploader } from '../utils/azure-blob';
 
 const createBlob = catchAsync(async (req, res) => {
     const { type } = req.body;
@@ -11,6 +11,8 @@ const createBlob = catchAsync(async (req, res) => {
 
     if (type === "users") {
         result = await users_blob_uploader.uploadImage(image.buffer, image.originalname)
+    } else if (type === "events") {
+        result = await event_blob_uploader.uploadImage(image.buffer, image.originalname)
     } else {
         result = await thread_blob_uploader.uploadImage(image.buffer, image.originalname)
     }

@@ -49,7 +49,7 @@ export default router;
  *                 description: The image file to upload.
  *               type:
  *                 type: string
- *                 enum: ["users", "threads"]
+ *                 enum: ["users", "threads", "events"]
  *                 description: The type of upload, either users or threads.
  *     responses:
  *       "201":

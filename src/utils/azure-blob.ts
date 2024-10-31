@@ -144,3 +144,8 @@ export const users_blob_uploader = new AzureBlobUploader({
     connectionString: config.azure_blob_connection_string,
     containerName: "users"
 })
+
+export const event_blob_uploader = new AzureBlobUploader({
+    connectionString: config.azure_blob_connection_string,
+    containerName: "events"
+})
