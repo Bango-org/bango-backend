@@ -119,7 +119,15 @@ const getEventById = async <Key extends keyof Event>(
 ): Promise<Pick<Event, Key> | null> => {
     return prisma.event.findUnique({
         where: { id },
-        select: keys.reduce((obj, k) => ({ ...obj, [k]: true }), {})
+        select: {
+            ...keys.reduce((obj, k) => ({ ...obj, [k]: true }), {}),
+            _count: {
+                select: {
+                    threads: true,
+                    trades: true
+                }
+            }
+        },
     }) as Promise<Pick<Event, Key> | null>;
 };
 

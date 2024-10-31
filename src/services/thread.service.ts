@@ -1,6 +1,5 @@
 import { EventStatus, Prisma, Event, Thread } from '@prisma/client';
 import prisma from '../client';
-import { GetThread } from '../types/response';
 
 /**
  * Create a Thread
@@ -100,7 +99,16 @@ const getThreadById = async <Key extends keyof Thread>(
 ): Promise<Pick<Thread, Key> | null> => {
     return prisma.thread.findUnique({
         where: { id },
-        select: keys.reduce((obj, k) => ({ ...obj, [k]: true }), {})
+        select: {
+            ...keys.reduce((obj, k) => ({ ...obj, [k]: true }), {}),
+            user: {
+                select: {
+                    id: true,
+                    username: true,
+                    profile_pic: true
+                }
+            }
+        }
     }) as Promise<Pick<Thread, Key> | null>;
 };
 
