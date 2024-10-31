@@ -20,7 +20,10 @@ const getUser = catchAsync(async (req, res) => {
 });
 
 const updateUser = catchAsync(async (req, res) => {
-  const user = await userService.updateUserByWalletAddress(req.params.wallet_address, req.body);
+
+  let usr: any = req.user;
+
+  const user = await userService.updateUserByWalletAddress(usr.wallet_address, req.body);
   res.send(user);
 });
 

@@ -17,9 +17,6 @@ const getUser = {
 };
 
 const updateUser = {
-  params: Joi.object().keys({
-    wallet_address: Joi.string().required()
-  }),
   body: Joi.object()
     .keys({
       about: Joi.string(),
