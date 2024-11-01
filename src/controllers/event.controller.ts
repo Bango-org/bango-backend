@@ -5,10 +5,10 @@ import catchAsync from '../utils/catchAsync';
 import { eventService } from '../services';
 
 const createEvent = catchAsync(async (req, res) => {
-    const { question, description, option_a, option_b, resolution_criteria, image, expiry_date, community } = req.body;
+    const { question, description, outcomes, resolution_criteria, image, expiry_date, community } = req.body;
     let usr: any = req.user;
 
-    const event = await eventService.createEvent(question, description, option_a, option_b, resolution_criteria, image, expiry_date, community, usr.wallet_address);
+    const event = await eventService.createEvent(question, description, outcomes, resolution_criteria, image, expiry_date, community, usr.wallet_address);
     res.status(StatusCodes.CREATED).send(event);
 });
 
@@ -22,7 +22,7 @@ const getEvents = catchAsync(async (req, res) => {
 const getEvent = catchAsync(async (req, res) => {
     const event = await eventService.getEventById(req.params.eventId);
     if (!event) {
-        throw new ApiError(StatusCodes.NOT_FOUND, 'Evet not found');
+        throw new ApiError(StatusCodes.NOT_FOUND, 'Event not found');
     }
     res.send(event);
 });

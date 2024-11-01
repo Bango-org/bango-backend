@@ -1,4 +1,4 @@
-import { EventStatus, Prisma, Event } from '@prisma/client';
+import { EventStatus, Prisma, Event, Outcome } from '@prisma/client';
 import prisma from '../client';
 
 /**
@@ -9,8 +9,7 @@ import prisma from '../client';
 const createEvent = async (
     question: string,
     description: string,
-    option_a: string,
-    option_b: string,
+    outcomes: string[],
     resolution_criteria: string,
     image: string,
     expiry_date: Date,
@@ -28,14 +27,19 @@ const createEvent = async (
         data: {
             question,
             description,
-            option_a,
-            option_b,
             resolution_criteria,
             image,
             expiry_date,
             community,
             userID: usr?.id!,
-            status: EventStatus.ACTIVE
+            status: EventStatus.ACTIVE,
+            outcomes: {
+                create: outcomes.map((title: string) => {
+                    return {
+                        outcome_title: title 
+                    }
+                })
+            }
         }
     });
 };
@@ -62,8 +66,6 @@ const queryEvents = async <Key extends keyof Event>(
         'unique_id',
         'question',
         'description',
-        'option_a',
-        'option_b',
         'resolution_criteria',
         'image',
         'expiry_date',
@@ -80,6 +82,14 @@ const queryEvents = async <Key extends keyof Event>(
         where: filter,
         select: {
             ...keys.reduce((obj, k) => ({ ...obj, [k]: true }), {}),
+            outcomes: {
+                select: {
+                    id: true,
+                    outcome_title: true,
+                    current_supply: true,
+                    total_liquidity: true
+                }
+            },
             _count: {
                 select: {
                     threads: true,
@@ -106,9 +116,8 @@ const getEventById = async <Key extends keyof Event>(
         'id',
         'unique_id',
         'question',
+        'outcomes',
         'description',
-        'option_a',
-        'option_b',
         'resolution_criteria',
         'image',
         'expiry_date',

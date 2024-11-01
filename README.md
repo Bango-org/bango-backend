@@ -17,3 +17,45 @@
 
 3. Add discription in event
 4. Multi outcome architecture
+
+
+=================================================================================================================================================================
+
+
+Play Money - Offchain Prediction Market 
+
+-> Event 
+    outcomes -> Conditional Tokens[]
+
+
+-> Conditional Token
+    id | eg: 1
+    evnet | eg: 1
+    outcome title | eg: Yes
+    current token supply | init 0
+    total liquidity | 0 
+    users [{userid, tokenallocated}] | eg [[swapnil, 100], [tanuj, 200]]
+
+-> TokenAllocation 
+    id | eg 1 
+    userId Primary key
+    conditionalTokenId Primary Key | eg 1
+    amount | eg 100
+
+
+
+
+=> AMM
+    1. User will give token id 
+    2. Tigdam -> Token Price
+    3. User will pay the Token Price 
+    4. AMM will update the total liquidity of the Token and token supply [Mint new Token]
+
+    Event ID
+    Outcome ID
+    Trade Type
+    Quantity 
+    Current Price
+
+
+Update volume by checking Outcome supply

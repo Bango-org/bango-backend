@@ -53,10 +53,10 @@ export default router;
  *                 type: string
  *               description:
  *                 type: string
- *               option_a:
- *                 type: string
- *               option_b:
- *                 type: string
+ *               outcomes:
+ *                 type: array
+ *                 items: 
+ *                   type: string
  *               resolution_criteria:
  *                 type: string
  *               image:
@@ -70,8 +70,7 @@ export default router;
  *                   type: string
  *             example:
  *               question: will kamla haris win this election
- *               option_a: Will Win
- *               option_b: Will Loose
+ *               outcomes: ['Kamla Haris', 'Doland Trump', 'Narendra Modi']
  *               resolution_criteria: Resolution will be based on US election results
  *               image: https://linktoimageblob
  *               description: lets see who will win
@@ -95,8 +94,6 @@ export default router;
  *     summary: Get all Events
  *     description: Only users can retrieve all events.
  *     tags: [Events]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: id

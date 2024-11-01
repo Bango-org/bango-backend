@@ -5,6 +5,8 @@ import docsRoute from './docs.route';
 import eventRoute from './event.route';
 import threadRoute from './thread.route';
 import blobRoute from './blob.route';
+import outcomeRoute from './outcome.route';
+import tokenAllocationRoute from './token-allocation.route';
 
 import config from '../../config/config';
 import path from 'path';
@@ -31,6 +33,14 @@ const defaultRoutes = [
   {
     path: "/upload",
     route: blobRoute
+  },
+  {
+    path: "/outcomes",
+    route: outcomeRoute
+  },
+  {
+    path: "/token-allocations",
+    route: tokenAllocationRoute
   }
 ];
 

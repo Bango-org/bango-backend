@@ -4,8 +4,7 @@ const createEvent = {
   body: Joi.object().keys({
     question: Joi.string().required(),
     description: Joi.string().required(),
-    option_a: Joi.string().required(),
-    option_b: Joi.string().required(),
+    outcomes: Joi.array().items(Joi.string().min(1)).min(2),
     resolution_criteria: Joi.string().required(),
     image: Joi.string().required(),
     expiry_date:Joi.date().required(),

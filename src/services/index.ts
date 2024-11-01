@@ -4,3 +4,5 @@ export { default as tokenService } from './token.service';
 export { default as emailService } from './email.service';
 export { default as eventService } from './event.service';
 export { default as threadService } from './thread.service';
+export { default as outcomeService } from './outcome.service';
+export { default as tokenAllocationService } from './tokenAllocation.service';
