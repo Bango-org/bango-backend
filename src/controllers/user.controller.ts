@@ -12,7 +12,7 @@ const getUsers = catchAsync(async (req, res) => {
 });
 
 const getUser = catchAsync(async (req, res) => {
-  const user = await userService.getUserById(req.params.wallet_address);
+  const user = await userService.getUserByAddress(req.params.wallet_address);
   if (!user) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
   }

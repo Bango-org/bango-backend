@@ -12,7 +12,7 @@ router
   .patch(auth('manageUsers'), validate(userValidation.updateUser), userController.updateUser);
   
   router
-  .route('/:userId')
+  .route('/:wallet_address')
   .get(auth('getUsers'), validate(userValidation.getUser), userController.getUser)
 
 export default router;

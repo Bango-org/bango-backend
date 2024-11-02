@@ -109,13 +109,17 @@ const getUserByAddress = async <Key extends keyof User>(
     'about',
     'wallet_address',
     'profile_pic',
+    'events',
+    'trades',
     'createdAt',
     'updatedAt'
   ] as Key[]
 ): Promise<Pick<User, Key> | null> => {
   return prisma.user.findUnique({
     where: { wallet_address },
-    select: keys.reduce((obj, k) => ({ ...obj, [k]: true }), {})
+    select: {
+      ...keys.reduce((obj, k) => ({ ...obj, [k]: true }), {}),
+    }
   }) as Promise<Pick<User, Key> | null>;
 };
 
