@@ -1,274 +1,499 @@
-import * as readline from 'readline-sync';
+import { PrismaClient } from '@prisma/client';
+import ApiError from './utils/ApiError';
+import { StatusCodes } from 'http-status-codes';
 
-// Interfaces and Types
-type Outcome = 'Yes' | 'No';
+const prisma = new PrismaClient();
 
-interface Shares {
-    Yes: number;
-    No: number;
+interface TradeResult {
+    shares: number;
+    cost: number;
+    priceImpacts: PriceImpact[];
 }
 
-interface UserData {
-    usdt: number;
-    shares: { [eventId: string]: Shares };
-    winnings: number;
+interface QuoteResult {
+    usdAmount: number;
+    shares: number;
+    pricePerShare: number;
+    priceImpact: number;
+    totalFee: number;
+    afterFees: number;
+    newPrice: number;
 }
 
-interface EventData {
-    eventId: string;
-    creator: string;
-    outcomes: Outcome[];
-    shares: Shares;
-    totalShares: number;
-    feesCollected: number;
-    isSettled: boolean;
-    winningOutcome: Outcome | null;
+interface PriceImpact {
+    outcomeId: number;
+    title: string;
+    beforePrice: number;
+    afterPrice: number;
+    impact: number;
 }
 
-class Event implements EventData {
-    public eventId: string;
-    public creator: string;
-    public outcomes: Outcome[];
-    public shares: Shares;
-    public totalShares: number;
-    public feesCollected: number;
-    public isSettled: boolean;
-    public winningOutcome: Outcome | null;
-
-    constructor(eventId: string, creator: string, outcomes: Outcome[]) {
-        this.eventId = eventId;
-        this.creator = creator;
-        this.outcomes = outcomes;
-        this.shares = { Yes: 1000, No: 1000 };
-        this.totalShares = this.shares.Yes + this.shares.No;
-        this.feesCollected = 0;
-        this.isSettled = false;
-        this.winningOutcome = null;
-    }
-
-    getPrice(outcome: Outcome): number {
-        return this.shares[outcome] / this.totalShares;
-    }
-
-    updateTotalShares(): void {
-        this.totalShares = this.shares.Yes + this.shares.No;
-    }
-
-    adjustShares(outcome: Outcome, amount: number): void {
-        this.shares[outcome] += amount;
-        this.updateTotalShares();
-    }
-
-    settleEvent(winningOutcome: Outcome): void {
-        this.isSettled = true;
-        this.winningOutcome = winningOutcome;
-        console.log(`Event ${this.eventId} settled. Winning outcome: ${winningOutcome}`);
-    }
+interface MarketState {
+    shares: number[];
+    b: number;
+    outcomes: any[];
 }
 
-class PredictionMarket {
-    private events: { [eventId: string]: Event };
-    private users: { [username: string]: UserData };
+class LMSR_AMM {
+    private readonly FEE_RATE = 0.02;           // 2% fee
+    private readonly INITIAL_LIQUIDITY = 100;   // Initial liquidity parameter
+    private readonly MIN_SHARES = 1;            // Minimum shares to maintain
+    private readonly MAX_PRICE_IMPACT = 0.5;    // 50% max price impact
 
-    constructor() {
-        this.events = {};
-        this.users = {};
+    // Get current market state
+    private async getMarketState(eventId: number): Promise<MarketState> {
+        const outcomes = await prisma.outcome.findMany({
+            where: { eventID: eventId },
+            orderBy: { id: 'asc' }
+        });
+
+        const totalLiquidity = outcomes.reduce((sum, o) => sum + o.total_liquidity, 0);
+        const b = Math.max(totalLiquidity / outcomes.length, this.INITIAL_LIQUIDITY);
+        const shares = outcomes.map(o => Math.max(o.current_supply, this.MIN_SHARES));
+
+        return { shares, b, outcomes };
     }
 
-    createEvent(eventId: string, creator: string): void {
-        if (this.events[eventId]) {
-            console.log(`Event ${eventId} already exists.`);
-            return;
-        }
-        this.events[eventId] = new Event(eventId, creator, ['Yes', 'No']);
-        this.addUser(creator, 0); // Add creator if not present
-        console.log(`Event ${eventId} created by ${creator} with outcomes Yes and No.`);
+    // Calculate prices for all outcomes
+    private calculatePrices(shares: number[], b: number): number[] {
+        const expShares = shares.map(s => Math.exp(s / b));
+        const sumExp = expShares.reduce((sum, exp) => sum + exp, 0);
+        return expShares.map(exp => exp / sumExp);
     }
 
-    addUser(username: string, usdtAmount: number): void {
-        if (!this.users[username]) {
-            this.users[username] = {
-                usdt: usdtAmount,
-                shares: {},
-                winnings: 0
+    // Calculate cost for share change
+    private calculateCost(oldShares: number[], newShares: number[], b: number): number {
+        const oldCost = b * Math.log(oldShares.reduce((sum, s) => sum + Math.exp(s / b), 0));
+        const newCost = b * Math.log(newShares.reduce((sum, s) => sum + Math.exp(s / b), 0));
+        return newCost - oldCost;
+    }
+
+    // Calculate price impacts
+    private calculatePriceImpacts(
+        outcomes: any[],
+        pricesBefore: number[],
+        pricesAfter: number[]
+    ): PriceImpact[] {
+        return pricesBefore.map((price, index) => ({
+            outcomeId: outcomes[index].id,
+            title: outcomes[index].outcome_title,
+            beforePrice: price,
+            afterPrice: pricesAfter[index],
+            impact: ((pricesAfter[index] - price) / price) * 100
+        }));
+    }
+
+    // Buy shares
+    public async buyShares(
+        eventId: number,
+        outcomeId: number,
+        amount: number,
+        userId: number
+    ): Promise<TradeResult> {
+        return await prisma.$transaction(async (tx) => {
+            // Validate user and balance
+            const user = await tx.user.findUnique({
+                where: { id: userId },
+                select: { playmoney: true }
+            });
+
+            if (!user) throw new ApiError(StatusCodes.NOT_FOUND,'User not found');
+            if (user.playmoney < amount) throw new ApiError(StatusCodes.BAD_REQUEST, 'Insufficient balance');
+
+            // Get market state
+            const { shares: currentShares, b, outcomes } = await this.getMarketState(eventId);
+            const outcomeIndex = outcomes.findIndex(o => o.id === outcomeId);
+            if (outcomeIndex === -1) throw new ApiError(StatusCodes.NOT_FOUND,'Outcome not found');
+
+            // Calculate current prices
+            const pricesBefore = this.calculatePrices(currentShares, b);
+
+            // Binary search for optimal shares to buy
+            let low = 1;
+            let high = amount * 100;
+            let sharesToBuy = 0;
+            let totalCost = 0;
+            let newShares = currentShares;
+
+            while (low <= high) {
+                const mid = Math.floor((low + high) / 2);
+                const testShares = [...currentShares];
+                testShares[outcomeIndex] += mid;
+
+                const cost = this.calculateCost(currentShares, testShares, b);
+                const withFee = cost * (1 + this.FEE_RATE);
+
+                if (withFee <= amount) {
+                    sharesToBuy = mid;
+                    totalCost = withFee;
+                    newShares = testShares;
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;
+                }
+            }
+
+            if (sharesToBuy === 0) throw new ApiError(StatusCodes.BAD_REQUEST, 'Amount too small');
+
+            // Calculate new prices and impacts
+            const pricesAfter = this.calculatePrices(newShares, b);
+            const priceImpacts = this.calculatePriceImpacts(outcomes, pricesBefore, pricesAfter);
+
+            // Check max price impact
+            // if (Math.abs(priceImpacts[outcomeIndex].impact) > this.MAX_PRICE_IMPACT * 100) {
+            //     throw new ApiError('Price impact too high');
+            // }
+
+            // Update user balance
+            await tx.user.update({
+                where: { id: userId },
+                data: { playmoney: { decrement: Math.ceil(totalCost) } }
+            });
+
+            // Update outcome shares and liquidity
+            await tx.outcome.update({
+                where: { id: outcomeId },
+                data: {
+                    current_supply: { increment: sharesToBuy },
+                    total_liquidity: { increment: Math.ceil(totalCost) }
+                }
+            });
+
+            // Decrease other outcomes' liquidity proportionally
+            const liquidityDecrease = totalCost / (outcomes.length - 1);
+            for (const outcome of outcomes) {
+                if (outcome.id !== outcomeId) {
+                    await tx.outcome.update({
+                        where: { id: outcome.id },
+                        data: {
+                            total_liquidity: {
+                                decrement: Math.ceil(liquidityDecrease)
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Record trade
+            await tx.trade.create({
+                data: {
+                    order_type: 'BUY',
+                    order_size: sharesToBuy,
+                    amount: Math.ceil(totalCost),
+                    eventID: eventId,
+                    userID: userId
+                }
+            });
+
+            // Update token allocation
+            await tx.tokenAllocation.upsert({
+                where: {
+                    userId_outcomeId: { userId, outcomeId }
+                },
+                create: {
+                    userId,
+                    outcomeId,
+                    amount: sharesToBuy
+                },
+                update: {
+                    amount: { increment: sharesToBuy }
+                }
+            });
+
+            return {
+                shares: sharesToBuy,
+                cost: Math.ceil(totalCost),
+                priceImpacts
             };
-            console.log(`${username} added with ${usdtAmount} USDT.`);
-        }
-        else {
-          console.log("error")
-        }
+        });
     }
 
-    buyShares(username: string, eventId: string, outcome: Outcome, usdtAmount: number): void {
-        const user = this.users[username];
-        const event = this.events[eventId];
-        if (!user || !event || event.isSettled) {
-            console.log("Invalid user or event, or event is already settled.");
-            return;
-        }
-        if (user.usdt < usdtAmount) {
-            console.log("Insufficient USDT balance.");
-            return;
-        }
+    // Sell shares
+    public async sellShares(
+        eventId: number,
+        outcomeId: number,
+        sharesToSell: number,
+        userId: number
+    ): Promise<TradeResult> {
+        return await prisma.$transaction(async (tx) => {
+            // Check user's token allocation
+            const allocation = await tx.tokenAllocation.findUnique({
+                where: {
+                    userId_outcomeId: { userId, outcomeId }
+                }
+            });
 
-        // Calculate fee and shares to buy after fee
-        const fee = usdtAmount * 0.02;
-        const netAmount = usdtAmount - fee;
-        const sharesToBuy = netAmount / event.getPrice(outcome);
+            if (!allocation || allocation.amount < sharesToSell) {
+                throw new ApiError(StatusCodes.BAD_REQUEST, 'Insufficient shares');
+            }
 
-        // Adjust shares and accumulate fees
-        event.adjustShares(outcome, sharesToBuy);
-        event.feesCollected += fee;
+            // Get market state
+            const { shares: currentShares, b, outcomes } = await this.getMarketState(eventId);
+            const outcomeIndex = outcomes.findIndex(o => o.id === outcomeId);
+            if (outcomeIndex === -1) throw new ApiError(StatusCodes.NOT_FOUND, 'Outcome not found');
 
-        // Update user balances
-        user.usdt -= usdtAmount;
-        user.shares[eventId] = user.shares[eventId] || { Yes: 0, No: 0 };
-        user.shares[eventId][outcome] += sharesToBuy;
+            // Calculate current prices
+            const pricesBefore = this.calculatePrices(currentShares, b);
 
-        console.log(`${username} bought ${sharesToBuy.toFixed(2)} shares of ${outcome} in ${eventId} for ${usdtAmount} USDT (including 2% fee).`);
+            // Calculate new shares and cost
+            const newShares = [...currentShares];
+            newShares[outcomeIndex] -= sharesToSell;
+
+            // Ensure minimum shares maintained
+            if (newShares[outcomeIndex] < this.MIN_SHARES) {
+                throw new ApiError(StatusCodes.BAD_REQUEST, 'Sell would reduce shares below minimum');
+            }
+
+            const returnWithoutFee = this.calculateCost(newShares, currentShares, b);
+            const fee = returnWithoutFee * this.FEE_RATE;
+            const returnAmount = Math.floor(returnWithoutFee - fee);
+
+            // Calculate new prices and impacts
+            const pricesAfter = this.calculatePrices(newShares, b);
+            const priceImpacts = this.calculatePriceImpacts(outcomes, pricesBefore, pricesAfter);
+
+            // Check max price impact
+            // if (Math.abs(priceImpacts[outcomeIndex].impact) > this.MAX_PRICE_IMPACT * 100) {
+            //     throw new ApiError(StatusCodes.BAD_REQUEST, 'Price impact too high');
+            // }
+
+            // Update outcome
+            await tx.outcome.update({
+                where: { id: outcomeId },
+                data: {
+                    current_supply: { decrement: sharesToSell },
+                    total_liquidity: { decrement: returnAmount }
+                }
+            });
+
+            // Increase other outcomes' liquidity proportionally
+            const liquidityIncrease = returnAmount / (outcomes.length - 1);
+            for (const outcome of outcomes) {
+                if (outcome.id !== outcomeId) {
+                    await tx.outcome.update({
+                        where: { id: outcome.id },
+                        data: {
+                            total_liquidity: {
+                                increment: Math.floor(liquidityIncrease)
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Update user balance
+            await tx.user.update({
+                where: { id: userId },
+                data: { playmoney: { increment: returnAmount } }
+            });
+
+            // Update token allocation
+            await tx.tokenAllocation.update({
+                where: {
+                    userId_outcomeId: { userId, outcomeId }
+                },
+                data: { amount: { decrement: sharesToSell } }
+            });
+
+            // Record trade
+            await tx.trade.create({
+                data: {
+                    order_type: 'SELL',
+                    order_size: sharesToSell,
+                    amount: returnAmount,
+                    eventID: eventId,
+                    userID: userId
+                }
+            });
+
+            return {
+                shares: sharesToSell,
+                cost: returnAmount,
+                priceImpacts
+            };
+        });
     }
 
-    sellShares(username: string, eventId: string, outcome: Outcome, sharesToSell: number): void {
-        const user = this.users[username];
-        const event = this.events[eventId];
-        if (!user || !event || event.isSettled) {
-            console.log("Invalid user or event, or event is already settled.");
-            return;
-        }
-        if (!user.shares[eventId] || user.shares[eventId][outcome] < sharesToSell) {
-            console.log("Insufficient shares to sell.");
-            return;
-        }
+    /**
+     * Get current market prices and share supplies
+     */
+    public async getMarketPrices(eventId: number) {
+        const { shares, b, outcomes } = await this.getMarketState(eventId);
+        const prices = this.calculatePrices(shares, b);
 
-        // Calculate USDT amount to receive after fee
-        const usdtAmount = sharesToSell * event.getPrice(outcome);
-        const fee = usdtAmount * 0.02;
-        const netAmount = usdtAmount - fee;
-
-        // Adjust shares and accumulate fees
-        event.adjustShares(outcome, -sharesToSell);
-        event.feesCollected += fee;
-
-        // Update user balances
-        user.usdt += netAmount;
-        user.shares[eventId][outcome] -= sharesToSell;
-
-        console.log(`${username} sold ${sharesToSell.toFixed(2)} shares of ${outcome} in ${eventId} for ${netAmount.toFixed(2)} USDT (after 2% fee).`);
+        return outcomes.map((outcome, index) => ({
+            outcomeId: outcome.id,
+            title: outcome.outcome_title,
+            currentPrice: prices[index],
+            priceInUsd: prices[index],
+            currentSupply: outcome.current_supply,
+            totalLiquidity: outcome.total_liquidity,
+            impliedProbability: prices[index] * 100
+        }));
     }
 
-    showUserBalance(username: string): void {
-        const user = this.users[username];
-        if (!user) {
-            console.log("User not found.");
-            return;
-        }
-        console.log(`${username} Balance: ${user.usdt.toFixed(2)} USDT`);
-        console.log("Shares:");
-        for (const eventId in user.shares) {
-            console.log(`  Event ${eventId}: Yes - ${user.shares[eventId].Yes.toFixed(2)}, No - ${user.shares[eventId].No.toFixed(2)}`);
-        }
-        console.log(`Total Winnings: ${user.winnings.toFixed(2)} USDT`);
-    }
+    /**
+     * Quote USD to Shares conversion
+     * Given a USD amount, calculate how many shares you would receive
+     */
+    public async quoteUsdToShares(
+        eventId: number,
+        outcomeId: number,
+        usdAmount: number
+    ): Promise<QuoteResult> {
+        const { shares: currentShares, b, outcomes } = await this.getMarketState(eventId);
+        const outcomeIndex = outcomes.findIndex(o => o.id === outcomeId);
+        
+        if (outcomeIndex === -1) throw new ApiError(StatusCodes.NOT_FOUND, 'Outcome not found');
 
-    showEventPrices(eventId: string): void {
-        const event = this.events[eventId];
-        if (!event) {
-            console.log("Event not found.");
-            return;
-        }
-        console.log(`Prices for Event ${eventId}:`);
-        console.log(`  Yes: ${event.getPrice("Yes").toFixed(4)} USDT`);
-        console.log(`  No: ${event.getPrice("No").toFixed(4)} USDT`);
-    }
+        // Current price
+        const currentPrices = this.calculatePrices(currentShares, b);
+        const currentPrice = currentPrices[outcomeIndex];
 
-    endEvent(eventId: string, winningOutcome: Outcome): void {
-        const event = this.events[eventId];
-        if (!event || event.isSettled) {
-            console.log("Invalid event or event is already settled.");
-            return;
-        }
+        // Binary search for optimal shares
+        let low = 1;
+        let high = usdAmount * 100; // Scale factor for precision
+        let optimalShares = 0;
+        let finalCost = 0;
+        let newPrice = currentPrice;
 
-        // Settle the event with the winning outcome
-        event.settleEvent(winningOutcome);
+        while (low <= high) {
+            const mid = Math.floor((low + high) / 2);
+            const testShares = [...currentShares];
+            testShares[outcomeIndex] += mid;
 
-        // Calculate the losing pool
-        const losingOutcome: Outcome = winningOutcome === "Yes" ? "No" : "Yes";
-        const totalLosingShares = event.shares[losingOutcome];
-        const losingPool = totalLosingShares * event.getPrice(losingOutcome);
+            const cost = this.calculateCost(currentShares, testShares, b);
+            const withFee = cost * (1 + this.FEE_RATE);
 
-        // Transfer the losing pool to the winning outcome
-        const totalWinningShares = event.shares[winningOutcome];
-        const winningPool = totalWinningShares + losingPool;
-
-        // Calculate creator commission (5% of the winning pool)
-        const creatorPayout = winningPool * 0.05;
-        const userPayoutPool = winningPool - creatorPayout;
-
-        // Distribute creator payout
-        this.users[event.creator].usdt += creatorPayout;
-        console.log(`${event.creator} (creator) received a 5% fee from winning pool: ${creatorPayout.toFixed(2)} USDT`);
-
-        // Distribute user winnings proportionally
-        for (const username in this.users) {
-            const userShares = this.users[username].shares[eventId]?.[winningOutcome] || 0;
-            if (userShares > 0) {
-                const userPayout = (userShares / totalWinningShares) * userPayoutPool;
-                this.users[username].winnings += userPayout;
-                console.log(`${username} received ${userPayout.toFixed(2)} USDT from the winning pool.`);
+            if (withFee <= usdAmount) {
+                optimalShares = mid;
+                finalCost = withFee;
+                newPrice = this.calculatePrices(testShares, b)[outcomeIndex];
+                low = mid + 1;
+            } else {
+                high = mid - 1;
             }
         }
+
+        const fee = finalCost * this.FEE_RATE;
+        const priceImpact = ((newPrice - currentPrice) / currentPrice) * 100;
+
+        return {
+            usdAmount: finalCost,
+            shares: optimalShares,
+            pricePerShare: finalCost / optimalShares,
+            priceImpact,
+            totalFee: fee,
+            afterFees: finalCost - fee,
+            newPrice
+        };
+    }
+
+    /**
+     * Quote Shares to USD conversion
+     * Given a number of shares, calculate how much USD you would receive
+     */
+    public async quoteeSharesToUsd(
+        eventId: number,
+        outcomeId: number,
+        sharesToSell: number
+    ): Promise<QuoteResult> {
+        const { shares: currentShares, b, outcomes } = await this.getMarketState(eventId);
+        const outcomeIndex = outcomes.findIndex(o => o.id === outcomeId);
+
+        if (outcomeIndex === -1) throw new ApiError(StatusCodes.NOT_FOUND, 'Outcome not found');
+
+        // Current price
+        const currentPrices = this.calculatePrices(currentShares, b);
+        const currentPrice = currentPrices[outcomeIndex];
+
+        // Calculate new shares state
+        const newShares = [...currentShares];
+        newShares[outcomeIndex] = Math.max(newShares[outcomeIndex] - sharesToSell, this.MIN_SHARES);
+
+        // Calculate return amount
+        const returnAmount = this.calculateCost(newShares, currentShares, b);
+        const fee = returnAmount * this.FEE_RATE;
+        const afterFees = returnAmount - fee;
+
+        // Calculate new price
+        const newPrice = this.calculatePrices(newShares, b)[outcomeIndex];
+        const priceImpact = ((newPrice - currentPrice) / currentPrice) * 100;
+
+        return {
+            usdAmount: returnAmount,
+            shares: sharesToSell,
+            pricePerShare: returnAmount / sharesToSell,
+            priceImpact,
+            totalFee: fee,
+            afterFees,
+            newPrice
+        };
+    }
+
+    // Get current market prices
+    public async getPrices(eventId: number) {
+        const { shares, b, outcomes } = await this.getMarketState(eventId);
+        const prices = this.calculatePrices(shares, b);
+
+        return outcomes.map((outcome, index) => ({
+            outcomeId: outcome.id,
+            title: outcome.outcome_title,
+            price: prices[index],
+            currentSupply: outcome.current_supply,
+            totalLiquidity: outcome.total_liquidity
+        }));
+    }
+
+    // Initialize a new market
+    public async initializeMarket(eventId: number) {
+        const outcomes = await prisma.outcome.findMany({
+            where: { eventID: eventId }
+        });
+
+        await Promise.all(outcomes.map(outcome =>
+            prisma.outcome.update({
+                where: { id: outcome.id },
+                data: {
+                    total_liquidity: this.INITIAL_LIQUIDITY,
+                    current_supply: this.MIN_SHARES
+                }
+            })
+        ));
+
+        return this.getPrices(eventId);
     }
 }
 
-// Initialize Prediction Market
-const market = new PredictionMarket();
+// Export the AMM
+export const amm = new LMSR_AMM();
 
-// Command interface
-function runCommandInterface(): void {
-    while (true) {
-        const command = readline.question("Enter command: ");
-        const args = command.split(" ");
+// Example usage
+async function testAMM() {
+    try {
 
-        switch (args[0]) {
-            case "create_event":
-                market.createEvent(args[1], args[2]);
-                break;
-            case "add_user":
-                market.addUser(args[1], parseFloat(args[2]));
-                break;
-            case "buy":
-                market.buyShares(args[1], args[2], args[3] as Outcome, parseFloat(args[4]));
-                break;
-            case "sell":
-                market.sellShares(args[1], args[2], args[3] as Outcome, parseFloat(args[4]));
-                break;
-            case "balance":
-                market.showUserBalance(args[1]);
-                break;
-            case "prices":
-                market.showEventPrices(args[1]);
-                break;
-            case "end_event":
-                market.endEvent(args[1], args[2] as Outcome);
-                break;
-            case "exit":
-                console.log("Exiting...");
-                return;
-            default:
-                console.log("Invalid command.");
-        }
+        // Get initial prices
+        console.log('Initial prices:', await amm.getPrices(1));
+
+        // Buy shares
+        const buyResult = await amm.buyShares(1, 2, 200, 1);
+        console.log('Buy result:', buyResult);
+
+        // Get updated prices
+        console.log('Updated prices:', await amm.getPrices(1));
+
+        // Sell shares
+        // const sellResult = await amm.sellShares(1, 3, 5, 1);
+        // console.log('Sell result:', sellResult);
+
+        // Get final prices
+        console.log('Final prices:', await amm.getPrices(1));
+
+    } catch (error) {
+        console.error('ApiError:', error);
     }
 }
 
-// Print commands list
-console.log("Commands:");
-console.log("  create_event <eventId> <creator>");
-console.log("  add_user <username> <usdtAmount>");
-console.log("  buy <username> <eventId> <outcome> <usdtAmount>");
-console.log("  sell <username> <eventId> <outcome> <sharesToSell>");
-console.log("  balance <username>");
-console.log("  prices <eventId>");
-console.log("  end_event <eventId> <winningOutcome>");
-console.log("  exit");
-
-runCommandInterface();
+if (require.main === module) {
+    testAMM().finally(() => prisma.$disconnect());
+}

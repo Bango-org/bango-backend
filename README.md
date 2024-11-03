@@ -59,3 +59,25 @@ Play Money - Offchain Prediction Market
 
 
 Update volume by checking Outcome supply
+
+
+
+=================================================================================================================================================================
+
+
+AMM 
+
+                Outcomes A   | Outcome B
+supply            200           150
+Liquidity         4000          2000
+
+Buy A -> Order
+AMM -> getprice A
+
+Aweight A = A.liquidity / A.Supply 
+totalWeight = A.liquidity / A.Supply +  B.liquidity / B.Supply ... n
+
+
+currentprice = Awight / totalWeight
+
+

@@ -29,7 +29,7 @@ export default router;
  *   get:
  *     summary: Get all Token Allocations
  *     description: Anyone can retrive Token Allocation.
- *     tags: [TokenAllocations]
+ *     tags: [Token Allocation]
  *     parameters:
  *       - in: query
  *         name: id
@@ -112,7 +112,7 @@ export default router;
  *   get:
  *     summary: Get a Token Allocation
  *     description: Anyone can retrieve Token Allocation detail
- *     tags: [TokenAllocations]
+ *     tags: [Token Allocation]
  *     parameters:
  *       - in: path
  *         name: id
