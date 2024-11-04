@@ -76,6 +76,7 @@ model Outcome {
   event            Event             @relation(fields: [eventID], references: [id])
   eventID          Int
   tokenAllocations TokenAllocation[]
+  trades           Trade[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -99,14 +100,16 @@ model Trade {
   id        Int    @id @default(autoincrement())
   unique_id String @default(uuid())
 
-  option     EventOption @default(OPTION_A)
-  order_type OrderType   @default(BUY)
-  order_size Int
-  amount     Int
+  order_type OrderType @default(BUY)
+  order_size Int       @default(0)
+  amount     Int       @default(0)
 
   // Trade happened on
-  event   Event @relation(fields: [eventID], references: [id])
-  eventID Int
+  event   Event? @relation(fields: [eventID], references: [id])
+  eventID Int?
+
+  outcome   Outcome? @relation(fields: [outcomeId], references: [id])
+  outcomeId Int?
 
   // Trade done by
   user   User? @relation(fields: [userID], references: [id])

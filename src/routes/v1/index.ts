@@ -44,7 +44,7 @@ const defaultRoutes = [
     route: tokenAllocationRoute
   },
   {
-    path: "/trade",
+    path: "/trades",
     route: tradeRoute
   }
 ];

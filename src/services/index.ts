@@ -6,3 +6,4 @@ export { default as eventService } from './event.service';
 export { default as threadService } from './thread.service';
 export { default as outcomeService } from './outcome.service';
 export { default as tokenAllocationService } from './tokenAllocation.service';
+export { default as tradeService } from './trade.service';

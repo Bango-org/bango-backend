@@ -79,5 +79,3 @@ totalWeight = A.liquidity / A.Supply +  B.liquidity / B.Supply ... n
 
 
 currentprice = Awight / totalWeight
-
-
