@@ -99,7 +99,7 @@ const queryEvents = async <Key extends keyof Event>(
         },
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: sortBy ? { [sortBy]: sortType } : undefined,
+        orderBy: sortBy ? { [sortBy.split(":")[0]]: sortBy.split(":")[1] } : undefined
     });
     return events as unknown as Pick<Event, Key>[];
 };

@@ -43,9 +43,12 @@ class LMSR_AMM {
     // Get current market state
     private async getMarketState(eventId: number): Promise<MarketState> {
         const outcomes = await prisma.outcome.findMany({
-            where: { eventID: eventId },
-            orderBy: { id: 'asc' }
+            where: {
+                eventID: eventId
+            },
         });
+
+        console.log(eventId)
 
         const totalLiquidity = outcomes.reduce((sum, o) => sum + o.total_liquidity, 0);
         const b = Math.max(totalLiquidity / outcomes.length, this.INITIAL_LIQUIDITY);

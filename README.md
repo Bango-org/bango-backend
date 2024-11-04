@@ -78,4 +78,10 @@ Aweight A = A.liquidity / A.Supply
 totalWeight = A.liquidity / A.Supply +  B.liquidity / B.Supply ... n
 
 
-currentprice = Awight / totalWeight
+currentprice = Awight / totalWeight]
+
+
+
+1. Error in query apis sort by 
+2. Trade/eventid giving all outcomes 
+3. rename user-outcome-shares 

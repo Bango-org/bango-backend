@@ -79,7 +79,7 @@ const getOutcomeShares = catchAsync(async (req, res) => {
 });
 
 const getOutcomePrices = catchAsync(async (req, res) => {
-    let prices =  await amm.getPrices(req.params.evnetId)
+    let prices =  await amm.getPrices(req.params.eventId)
     res.status(StatusCodes.OK).send(prices);
 });
 
