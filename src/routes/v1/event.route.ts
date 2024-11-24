@@ -15,6 +15,11 @@ router
   .route('/:eventId')
   .get(validate(eventValidation.getEvent), eventController.getEvent)
 
+router
+  .route('/close-event')
+  .post(auth("closeEvent"), validate(eventValidation.closeEvent), eventController.closeEvent)
+
+
 export default router;
 
 /**
@@ -106,6 +111,12 @@ export default router;
  *           type: number
  *         description: user ID
  *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: ["ACTIVE", "EXPIRED", "CLOSED"]
+ *         description: event status
+ *       - in: query
  *         name: unique_id
  *         schema:
  *           type: string
@@ -196,4 +207,44 @@ export default router;
  *         $ref: '#/components/responses/Forbidden'
  *       "404":
  *         $ref: '#/components/responses/NotFound'
+ */
+
+
+
+/**
+ * @swagger
+ * /events/close-event:
+ *   post:
+ *     summary: Close an Event
+ *     description: Can only be closed by prediction owner.
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - eventId
+ *               - outcomeWonId
+ *             properties:
+ *               eventId:
+ *                 type: number
+ *               outcomeWonId:
+ *                 type: number
+ *             example:
+ *               eventId: 3
+ *               outcomeWonId: 2
+ *     responses:
+ *       "204":
+ *         description: No Content
+ *       "400":
+ *         $ref: '#/components/responses/DuplicateEmail'
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ *       "403":
+ *         $ref: '#/components/responses/Forbidden'
+ *
  */

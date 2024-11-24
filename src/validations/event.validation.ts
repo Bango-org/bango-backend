@@ -17,6 +17,7 @@ const getEvents = {
     id: Joi.number(),
     question: Joi.string(),
     expiry_date: Joi.date(),
+    status: Joi.string().valid('ACTIVE', 'EXPIRED', 'CLOSED'),
     community: Joi.array().items(Joi.string().min(1)),
     userID: Joi.number(),
     updatedAt: Joi.date(),
@@ -32,8 +33,15 @@ const getEvent = {
   })
 };
 
+const closeEvent = {
+  params: Joi.object().keys({
+    eventId: Joi.number().integer()
+  })
+};
+
 export default {
   createEvent,
   getEvents,
   getEvent,
+  closeEvent
 };
