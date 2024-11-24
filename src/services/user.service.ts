@@ -53,6 +53,7 @@ const queryUsers = async <Key extends keyof User>(
     'about',
     'wallet_address',
     'profile_pic',
+    'playmoney',
     'createdAt',
     'updatedAt'
   ] as Key[]
@@ -109,6 +110,7 @@ const getUserByAddress = async <Key extends keyof User>(
     'wallet_address',
     'profile_pic',
     'events',
+    'playmoney',
     'trades',
     'createdAt',
     'updatedAt'

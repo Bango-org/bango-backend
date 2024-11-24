@@ -20,7 +20,8 @@ const updateUser = {
   body: Joi.object()
     .keys({
       about: Joi.string(),
-      profile_pic: Joi.string().required(),
+      profile_pic: Joi.string(),
+      playmoney: Joi.number()
     })
     .min(1)
 };

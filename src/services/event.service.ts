@@ -90,6 +90,12 @@ const queryEvents = async <Key extends keyof Event>(
                     total_liquidity: true
                 }
             },
+            user: {
+                select: {
+                    id: true,
+                    username: true
+                }
+            },
             _count: {
                 select: {
                     threads: true,
