@@ -16,7 +16,7 @@ router
   .get(validate(eventValidation.getEvent), eventController.getEvent)
 
 router
-  .route('/close-event')
+  .route('/close')
   .post(auth("closeEvent"), validate(eventValidation.closeEvent), eventController.closeEvent)
 
 
@@ -213,7 +213,7 @@ export default router;
 
 /**
  * @swagger
- * /events/close-event:
+ * /events/close:
  *   post:
  *     summary: Close an Event
  *     description: Can only be closed by prediction owner.
