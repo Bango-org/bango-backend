@@ -9,6 +9,23 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  PORT: 3000
+  SIGNATURE_MESSAGE: ${{ secrets.SIGNATURE_MESSAGE }}
+  SMTP_HOST: email-server
+  SMTP_PORT: 587
+  SMTP_USERNAME: email-server-username
+  SMTP_PASSWORD: email-server-password
+  EMAIL_FROM: support@yourapp.com
+  # Sensitive env variables from GitHub secrets
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  JWT_ACCESS_EXPIRATION_MINUTES: 300
+  JWT_REFRESH_EXPIRATION_DAYS: 300
+  JWT_RESET_PASSWORD_EXPIRATION_MINUTES: 10
+  JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: 10
+  AZURE_BLOB_CONNECTON_STRING: ${{ secrets.AZURE_BLOB_CONNECTON_STRING }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
