@@ -75,9 +75,15 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
+<<<<<<< HEAD
           client-id: ${{ secrets.CLIENT_ID }}
           tenant-id: ${{ secrets.TENANT_ID }}
           subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+=======
+          client-id: ${{ secrets.__clientidsecretname__ }}
+          tenant-id: ${{ secrets.__tenantidsecretname__ }}
+          subscription-id: ${{ secrets.__subscriptionidsecretname__ }}
+>>>>>>> parent of 1af5225 (fix workflow azure login creds)
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
