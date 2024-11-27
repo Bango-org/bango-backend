@@ -448,6 +448,23 @@ class LMSR_AMM {
         }));
     }
 
+    // Get current market price of a outcome
+    public async getOutcomePrice(eventId: number, outcomeId: number) {
+        const { shares, b, outcomes } = await this.getMarketState(eventId);
+        const prices = this.calculatePrices(shares, b);
+
+        const result = outcomes.find((outcome, index) => outcome.id === outcomeId);
+        const index = outcomes.indexOf(result); // Get index of the found outcome
+
+        return {
+            outcomeId: result.id,
+            title: result.outcome_title,
+            price: prices[index],
+            currentSupply: result.current_supply,
+            totalLiquidity: result.total_liquidity,
+        };
+    }
+
     // Initialize a new market
     public async initializeMarket(eventId: number) {
         const outcomes = await prisma.outcome.findMany({

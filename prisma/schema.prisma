@@ -49,8 +49,8 @@ model Event {
   resolution_criteria String    @db.Text
   image               String
 
-  status       EventStatus @default(ACTIVE)
-  outcomeWon   Int?
+  status     EventStatus @default(ACTIVE)
+  outcomeWon Int?
 
   // To community
   community String[]
@@ -77,7 +77,7 @@ model Outcome {
   event            Event             @relation(fields: [eventID], references: [id])
   eventID          Int
   tokenAllocations TokenAllocation[]
-  trades           Trade[] 
+  trades           Trade[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -104,6 +104,8 @@ model Trade {
   order_type OrderType @default(BUY)
   order_size Int       @default(0)
   amount     Int       @default(0)
+
+  price Int @default(0) // price at which an asset was bought
 
   // Trade happened on
   event   Event? @relation(fields: [eventID], references: [id])

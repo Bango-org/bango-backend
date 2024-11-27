@@ -11,8 +11,23 @@ const buyTrade = catchAsync(async (req, res) => {
 
     const { eventId, outcomeId, usdtAmount } = req.body;
 
+    const outcome = await prisma.outcome.findFirst({
+        where: {
+            id: outcomeId,
+            eventID: eventId
+        }
+    });
+
+    if (outcome === null) {
+        res.status(StatusCodes.NOT_FOUND).send("Outcome Not Found")
+        return;
+    }
+
     let usr: any = req.user;
     const buyResult = await amm.buyShares(eventId, outcomeId, usdtAmount, usr.id);
+
+    const outcomePriceChange = buyResult.priceImpacts.find(priceImpact => priceImpact.outcomeId === outcomeId);
+
     await prisma.trade.create({
         data: {
             order_type: OrderType.BUY,
@@ -21,6 +36,7 @@ const buyTrade = catchAsync(async (req, res) => {
             eventID: eventId,
             outcomeId: outcomeId,
             userID: usr.id, 
+            price: outcomePriceChange?.beforePrice
         }
     });
 
@@ -30,9 +46,24 @@ const buyTrade = catchAsync(async (req, res) => {
 
 const sellTrade = catchAsync(async (req, res) => {
     const { eventId, outcomeId, sharesToSell } = req.body;
+
+    const outcome = await prisma.outcome.findFirst({
+        where: {
+            id: outcomeId,
+            eventID: eventId
+        }
+    });
+
+    if (outcome === null) {
+        res.status(StatusCodes.NOT_FOUND).send("Outcome Not Found")
+        return;
+    }
     
     let usr: any = req.user;
     const sellResult = await amm.sellShares(eventId, outcomeId, sharesToSell, usr.id);
+
+    const outcomePriceChange = sellResult.priceImpacts.find(priceImpact => priceImpact.outcomeId === outcomeId);
+
 
     await prisma.trade.create({
         data: {
@@ -42,6 +73,7 @@ const sellTrade = catchAsync(async (req, res) => {
             eventID: eventId,
             outcomeId: outcomeId,
             userID: usr.id, 
+            price: outcomePriceChange?.beforePrice
         }
     });
 
