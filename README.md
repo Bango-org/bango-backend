@@ -91,7 +91,3 @@ currentprice = Awight / totalWeight]
 
 # volume 
 eg buy and sell is done then volume is the additon of assets buyed and sold in total tx
-
-
-# for graph 
-we need to get all trade timestamp and 
