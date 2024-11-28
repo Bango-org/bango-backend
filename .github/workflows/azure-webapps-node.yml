@@ -26,6 +26,21 @@ env:
   AZURE_WEBAPP_NAME: bangobackend    # set this to your application's name
   AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
   NODE_VERSION: '20.x'                # set this to the node version to use
+  PORT: 3000
+  SIGNATURE_MESSAGE: ${{ secrets.SIGNATURE_MESSAGE }}
+  SMTP_HOST: email-server
+  SMTP_PORT: 587
+  SMTP_USERNAME: email-server-username
+  SMTP_PASSWORD: email-server-password
+  EMAIL_FROM: support@yourapp.com
+  # Sensitive env variables from GitHub secrets
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  JWT_ACCESS_EXPIRATION_MINUTES: 300
+  JWT_REFRESH_EXPIRATION_DAYS: 300
+  JWT_RESET_PASSWORD_EXPIRATION_MINUTES: 10
+  JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: 10
+  AZURE_BLOB_CONNECTON_STRING: ${{ secrets.AZURE_BLOB_CONNECTON_STRING }}
 
 permissions:
   contents: read
