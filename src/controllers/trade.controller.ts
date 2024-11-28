@@ -36,7 +36,7 @@ const buyTrade = catchAsync(async (req, res) => {
             eventID: eventId,
             outcomeId: outcomeId,
             userID: usr.id, 
-            price: outcomePriceChange?.beforePrice
+            price: outcomePriceChange?.afterPrice
         }
     });
 
@@ -73,7 +73,7 @@ const sellTrade = catchAsync(async (req, res) => {
             eventID: eventId,
             outcomeId: outcomeId,
             userID: usr.id, 
-            price: outcomePriceChange?.beforePrice
+            price: outcomePriceChange?.afterPrice
         }
     });
 

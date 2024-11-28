@@ -8,6 +8,7 @@ import blobRoute from './blob.route';
 import outcomeRoute from './outcome.route';
 import tokenAllocationRoute from './token-allocation.route';
 import tradeRoute from './trade.route';
+import graphRoute from './graph.route';
 
 import config from '../../config/config';
 import path from 'path';
@@ -46,6 +47,10 @@ const defaultRoutes = [
   {
     path: "/trades",
     route: tradeRoute
+  },
+  {
+    path: "/graph",
+    route: graphRoute
   }
 ];
 

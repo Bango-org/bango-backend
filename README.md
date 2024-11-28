@@ -85,3 +85,13 @@ currentprice = Awight / totalWeight]
 1. Error in query apis sort by 
 2. Trade/eventid giving all outcomes 
 3. rename user-outcome-shares 
+
+
+
+
+# volume 
+eg buy and sell is done then volume is the additon of assets buyed and sold in total tx
+
+
+# for graph 
+we need to get all trade timestamp and 
