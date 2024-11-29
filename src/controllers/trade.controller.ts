@@ -26,20 +26,6 @@ const buyTrade = catchAsync(async (req, res) => {
     let usr: any = req.user;
     const buyResult = await amm.buyShares(eventId, outcomeId, usdtAmount, usr.id);
 
-    const outcomePriceChange = buyResult.priceImpacts.find(priceImpact => priceImpact.outcomeId === outcomeId);
-    console.log(outcomePriceChange?.afterPrice)
-    await prisma.trade.create({
-        data: {
-            order_type: OrderType.BUY,
-            order_size: buyResult.shares,
-            amount: buyResult.cost,
-            eventID: eventId,
-            outcomeId: outcomeId,
-            userID: usr.id, 
-            afterPrice: outcomePriceChange?.afterPrice
-        }
-    });
-
     res.status(StatusCodes.CREATED).send(buyResult);
 
 });
@@ -61,21 +47,6 @@ const sellTrade = catchAsync(async (req, res) => {
     
     let usr: any = req.user;
     const sellResult = await amm.sellShares(eventId, outcomeId, sharesToSell, usr.id);
-
-    const outcomePriceChange = sellResult.priceImpacts.find(priceImpact => priceImpact.outcomeId === outcomeId);
-
-
-    await prisma.trade.create({
-        data: {
-            order_type: OrderType.SELL,
-            order_size: sellResult.shares,
-            amount: sellResult.cost,
-            eventID: eventId,
-            outcomeId: outcomeId,
-            userID: usr.id, 
-            afterPrice: outcomePriceChange?.afterPrice
-        }
-    });
 
     res.status(StatusCodes.CREATED).send(sellResult);
 

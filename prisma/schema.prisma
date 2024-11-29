@@ -72,8 +72,8 @@ model Event {
 model Outcome {
   id               Int               @id @default(autoincrement())
   outcome_title    String
-  current_supply   Int               @default(0)
-  total_liquidity  Int               @default(0)
+  current_supply   Decimal               @default(0)
+  total_liquidity  Decimal               @default(0)
   event            Event             @relation(fields: [eventID], references: [id])
   eventID          Int
   tokenAllocations TokenAllocation[]
@@ -85,7 +85,7 @@ model Outcome {
 
 model TokenAllocation {
   id        Int     @id @default(autoincrement())
-  amount    Int
+  amount    Decimal
   user      User    @relation(fields: [userId], references: [id])
   userId    Int
   outcome   Outcome @relation(fields: [outcomeId], references: [id])
@@ -102,10 +102,10 @@ model Trade {
   unique_id String @default(uuid())
 
   order_type OrderType @default(BUY)
-  order_size Int       @default(0)
-  amount     Int       @default(0)
+  order_size Decimal       @default(0)
+  amount     Decimal       @default(0)
 
-  afterPrice Int @default(0) // price shift after the trade is bought
+  afterPrice Decimal @default(0) // price shift after the trade is bought
 
   // Trade happened on
   event   Event? @relation(fields: [eventID], references: [id])

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import ApiError from './utils/ApiError';
 import { StatusCodes } from 'http-status-codes';
 
@@ -50,9 +50,9 @@ class LMSR_AMM {
 
         console.log(eventId)
 
-        const totalLiquidity = outcomes.reduce((sum, o) => sum + o.total_liquidity, 0);
+        const totalLiquidity = outcomes.reduce((sum, o) => sum + o.total_liquidity.toNumber(), 0);
         const b = Math.max(totalLiquidity / outcomes.length, this.INITIAL_LIQUIDITY);
-        const shares = outcomes.map(o => Math.max(o.current_supply, this.MIN_SHARES));
+        const shares = outcomes.map(o => Math.max(o.current_supply.toNumber(), this.MIN_SHARES));
 
         return { shares, b, outcomes };
     }
@@ -177,6 +177,8 @@ class LMSR_AMM {
                 }
             }
 
+            const priceImpactforOutcome  = priceImpacts.find((impact) => impact.outcomeId === outcomeId);
+
             // Record trade
             await tx.trade.create({
                 data: {
@@ -184,9 +186,12 @@ class LMSR_AMM {
                     order_size: sharesToBuy,
                     amount: Math.ceil(totalCost),
                     eventID: eventId,
-                    userID: userId
+                    userID: userId,
+                    outcomeId: outcomeId,
+                    afterPrice: priceImpactforOutcome?.afterPrice
                 }
             });
+
 
             // Update token allocation
             await tx.tokenAllocation.upsert({
@@ -226,7 +231,7 @@ class LMSR_AMM {
                 }
             });
 
-            if (!allocation || allocation.amount < sharesToSell) {
+            if (!allocation || allocation.amount.toNumber() < sharesToSell) {
                 throw new ApiError(StatusCodes.BAD_REQUEST, 'Insufficient shares');
             }
 
@@ -298,6 +303,8 @@ class LMSR_AMM {
                 data: { amount: { decrement: sharesToSell } }
             });
 
+            const priceImpactforOutcome  = priceImpacts.find((impact) => impact.outcomeId === outcomeId);
+
             // Record trade
             await tx.trade.create({
                 data: {
@@ -305,7 +312,9 @@ class LMSR_AMM {
                     order_size: sharesToSell,
                     amount: returnAmount,
                     eventID: eventId,
-                    userID: userId
+                    userID: userId,
+                    outcomeId: outcomeId,
+                    afterPrice: priceImpactforOutcome?.afterPrice
                 }
             });
 
