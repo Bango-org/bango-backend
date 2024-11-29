@@ -105,7 +105,7 @@ model Trade {
   order_size Int       @default(0)
   amount     Int       @default(0)
 
-  price Int @default(0) // price at which an asset was bought
+  afterPrice Int @default(0) // price shift after the trade is bought
 
   // Trade happened on
   event   Event? @relation(fields: [eventID], references: [id])

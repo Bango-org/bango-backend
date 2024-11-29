@@ -29,7 +29,7 @@ const getEventGraph = catchAsync(async (req, res) => {
                 }
             },
             select: {
-                price: true,
+                afterPrice: true,
                 createdAt: true,
             }
         });
