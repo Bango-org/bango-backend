@@ -5,6 +5,9 @@ const getEventGraph = {
         eventID: Joi.number(),
         startDate: Joi.date(),
         endDate: Joi.date(),
+        type: Joi.string()
+            .valid('hour', 'day', 'month','year','all')
+            .default('hour')
     })
 };
 
@@ -13,4 +16,3 @@ const getEventGraph = {
 export default {
     getEventGraph,
 };
-  

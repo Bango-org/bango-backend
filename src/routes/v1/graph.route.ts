@@ -45,6 +45,12 @@ export default router;
  *         schema:
  *           type: number
  *         description: Event ID
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: ['hour', 'day', 'month','year','all']
+ *         default: 'hour'
  * 
  *     responses:
  *       "200":
