@@ -1,21 +1,18 @@
 import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../utils/catchAsync';
 import { authService, userService, tokenService, emailService } from '../services';
-import exclude from '../utils/exclude';
-import { User } from '@prisma/client';
-import * as web3 from "web3";
 import config from "../config/config";
 import prisma from '../client';
 import { generator } from '../utils/username-gen';
-
+import * as bip from 'bip322-js';
 
 const login = catchAsync(async (req, res) => {
   const { walletAddress, signature } = req.body;
 
   // Verify Signature
-  let address = web3.eth.accounts.recover(config.signature_message, signature);
-  console.log(address)
-  if (address !== walletAddress) {
+  const isValid = bip.Verifier.verifySignature(walletAddress, config.signature_message, signature)
+
+  if (!isValid) {
     res.status(400).send("INVALID SIGNATURE");
     return;
   }
