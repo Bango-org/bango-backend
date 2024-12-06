@@ -24,7 +24,6 @@ interface OutcomePriceData {
 
 const getEventIntervalLessGraph = catchAsync(async (req: any, res: any) => {
   const filter: EventGraphFilter = pick(req.query, ['eventID', 'startDate', 'endDate', 'type']);
-  let endTime = new Date();
 
   const outcomes = await prisma.outcome.findMany({
     where: {
@@ -69,9 +68,12 @@ const getEventIntervalLessGraph = catchAsync(async (req: any, res: any) => {
     })
 
     return {
-      outcomeId: outcome.id,
-      outcomeTitle: outcome.outcome_title,
-      trades: [
+
+      outcome: {
+        id: outcome.id,
+        outcome_title: outcome.outcome_title,
+      },
+      data: [
         {
           createdAt: outcome.createdAt,
           afterPrice: initPrice.toString()
