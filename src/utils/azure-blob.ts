@@ -137,15 +137,15 @@ class AzureBlobUploader {
 
 export const thread_blob_uploader = new AzureBlobUploader({
     connectionString: config.azure_blob_connection_string,
-    containerName: "threads"
+    containerName: "predictor-threads"
 })
 
 export const users_blob_uploader = new AzureBlobUploader({
     connectionString: config.azure_blob_connection_string,
-    containerName: "users"
+    containerName: "predictor-users"
 })
 
 export const event_blob_uploader = new AzureBlobUploader({
     connectionString: config.azure_blob_connection_string,
-    containerName: "events"
+    containerName: "predictor-events"
 })
