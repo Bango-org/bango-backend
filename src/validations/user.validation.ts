@@ -21,7 +21,8 @@ const updateUser = {
     .keys({
       about: Joi.string(),
       profile_pic: Joi.string(),
-      playmoney: Joi.number()
+      playmoney: Joi.number(),
+      username: Joi.string(),
     })
     .min(1)
 };

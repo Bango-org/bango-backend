@@ -133,7 +133,7 @@ const getUserByAddress = async <Key extends keyof User>(
 const updateUserByWalletAddress = async <Key extends keyof User>(
   wallet_address: string,
   updateBody: Prisma.UserUpdateInput,
-  keys: Key[] = ['id', 'about', 'profile_pic'] as Key[]
+  keys: Key[] = ['id', 'about', 'profile_pic', 'username'] as Key[]
 ): Promise<Pick<User, Key> | null> => {
   const user = await getUserByAddress(wallet_address);
   if (!user) {
