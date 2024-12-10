@@ -4,7 +4,8 @@ import { password } from './custom.validation';
 const login = {
   body: Joi.object().keys({
     walletAddress: Joi.string().required(),
-    signature: Joi.string().required()
+    signature: Joi.string().required(),
+    signatureType: Joi.string().required()
   })
 };
 
