@@ -50,6 +50,10 @@ const getEventIntervalLessGraph = catchAsync(async (req: any, res: any) => {
     take: 1
   })
 
+  if (latestTrade === null) {
+    return res.send([]).status(200);
+  }
+
 
   const initPrice = 1 / outcomes.length;
 
@@ -66,24 +70,36 @@ const getEventIntervalLessGraph = catchAsync(async (req: any, res: any) => {
         afterPrice: true
       }
     })
+    console.log(graphData)
 
-    return {
-
-      outcome: {
-        id: outcome.id,
-        outcome_title: outcome.outcome_title,
-      },
-      data: [
-        {
-          createdAt: outcome.createdAt,
-          afterPrice: initPrice.toString()
+    if (graphData.length === 0) {
+      return {
+        outcome: {
+          id: outcome.id,
+          outcome_title: outcome.outcome_title,
         },
-        ...graphData,
-        {
-          createdAt: latestTrade?.createdAt,
-          afterPrice: graphData[graphData.length - 1].afterPrice
-        }
-      ]
+        data: []
+      }
+    }
+    
+    else {
+      return {
+        outcome: {
+          id: outcome.id,
+          outcome_title: outcome.outcome_title,
+        },
+        data: [
+          {
+            createdAt: outcome.createdAt,
+            afterPrice: initPrice.toString()
+          },
+          ...graphData,
+          {
+            createdAt: latestTrade?.createdAt,
+            afterPrice: graphData[graphData.length - 1].afterPrice
+          }
+        ]
+      }
     }
 
   }));  
