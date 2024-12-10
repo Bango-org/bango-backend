@@ -5,17 +5,35 @@ import config from "../config/config";
 import prisma from '../client';
 import { generator } from '../utils/username-gen';
 import * as bip from 'bip322-js';
+import * as web3 from "web3";
+import e from 'express';
 
 const login = catchAsync(async (req, res) => {
-  const { walletAddress, signature } = req.body;
+  const { walletAddress, signature, signatureType } = req.body;
+
 
   // Verify Signature
-  const isValid = bip.Verifier.verifySignature(walletAddress, config.signature_message, signature)
+  if (signatureType === "bitcoin") {
 
-  if (!isValid) {
-    res.status(400).send("INVALID SIGNATURE");
-    return;
+    const isValid = bip.Verifier.verifySignature(walletAddress, config.signature_message, signature)
+
+    if (!isValid) {
+      res.status(400).send("INVALID SIGNATURE");
+      return;
+    }
+
+  } else {
+
+    let address = web3.eth.accounts.recover(config.signature_message, signature);
+    console.log(address)
+
+    if (address !== walletAddress) {
+      res.status(400).send("INVALID SIGNATURE");
+      return;
+    }
+
   }
+
 
   // Find user if exiss
   let user = await prisma.user.findFirst({
