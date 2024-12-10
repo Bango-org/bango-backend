@@ -36,7 +36,7 @@ const createEvent = async (
             outcomes: {
                 create: outcomes.map((title: string) => {
                     return {
-                        outcome_title: title 
+                        outcome_title: title
                     }
                 })
             }
@@ -128,6 +128,7 @@ const getEventById = async <Key extends keyof Event>(
         'description',
         'resolution_criteria',
         'image',
+        'user',
         'status',
         'outcomeWon',
         'expiry_date',
@@ -135,8 +136,29 @@ const getEventById = async <Key extends keyof Event>(
         'createdAt',
         'updatedAt'
     ] as Key[]
-): Promise<Pick<Event, Key> | null> => {
-    return prisma.event.findUnique({
+): Promise<any> => {
+
+    const usersTraded = await prisma.trade.findMany({
+        where: {
+            eventID: id,
+        },
+        select: {
+            user: true, // Select the user associated with the trade
+
+        },
+        distinct: ['userID']
+    });
+
+    const volume = await prisma.trade.aggregate({
+        where: {
+            eventID: id
+        }, 
+        _sum: {
+            amount: true
+        }
+    });
+
+    let data = await prisma.event.findUnique({
         where: { id },
         select: {
             ...keys.reduce((obj, k) => ({ ...obj, [k]: true }), {}),
@@ -147,7 +169,13 @@ const getEventById = async <Key extends keyof Event>(
                 }
             }
         },
-    }) as Promise<Pick<Event, Key> | null>;
+    });
+
+    return {
+        ...data,
+        usersTraded,
+        volume: volume._sum.amount
+    }
 };
 
 
