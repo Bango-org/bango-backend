@@ -80,7 +80,7 @@ const queryEvents = async <Key extends keyof Event>(
     const limit = options.limit ?? 10;
     const sortBy = options.sortBy;
     const sortType = options.sortType ?? 'desc';
-    const events = await prisma.event.findMany({
+    const events: any = await prisma.event.findMany({
         where: filter,
         select: {
             ...keys.reduce((obj, k) => ({ ...obj, [k]: true }), {}),
@@ -109,7 +109,25 @@ const queryEvents = async <Key extends keyof Event>(
         take: limit,
         orderBy: sortBy ? { [sortBy.split(":")[0]]: sortBy.split(":")[1] } : undefined
     });
-    return events as unknown as Pick<Event, Key>[];
+
+    const newEvents = Promise.all(events.map(async (event: any) => {
+
+        const usersTraded: any = await prisma.$queryRaw<number[]>`
+            SELECT COUNT(DISTINCT "userID") AS count
+            FROM "Trade"
+            WHERE "eventID" = ${event.id};
+        `;
+        const numUsersTraded = Number(usersTraded[0].count);
+
+        return {
+            ...event,
+            usersTraded: numUsersTraded
+        }
+    }));
+
+
+
+    return newEvents as unknown as Pick<Event, Key>[];
 };
 
 /**
@@ -138,21 +156,16 @@ const getEventById = async <Key extends keyof Event>(
     ] as Key[]
 ): Promise<any> => {
 
-    const usersTraded = await prisma.trade.findMany({
-        where: {
-            eventID: id,
-        },
-        select: {
-            user: true, // Select the user associated with the trade
-
-        },
-        distinct: ['userID']
-    });
+    const usersTraded: any = await prisma.$queryRaw<number[]>`
+        SELECT COUNT(DISTINCT "userID") AS count
+        FROM "Trade"
+        WHERE "eventID" = ${id};
+    `;
 
     const volume = await prisma.trade.aggregate({
         where: {
             eventID: id
-        }, 
+        },
         _sum: {
             amount: true
         }
@@ -173,7 +186,7 @@ const getEventById = async <Key extends keyof Event>(
 
     return {
         ...data,
-        usersTraded,
+        usersTraded: Number(usersTraded[0].count),
         volume: volume._sum.amount
     }
 };
