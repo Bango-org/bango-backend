@@ -43,7 +43,7 @@ const sendBitcoin = catchAsync(async (req, res) => {
     const resp = await sendToAddress({
         bitcoind, 
         address: walletAddress, 
-        amount: 0.00001,
+        amount: 0.00013,
         estimate_mode: "ECONOMICAL",
         replaceable: false,
         subtractfeefromamount: false,
