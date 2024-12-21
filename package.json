@@ -89,6 +89,7 @@
     "@types/readline-sync": "^1.4.8",
     "bcryptjs": "^2.4.3",
     "bip322-js": "^2.0.0",
+    "bitcoin-cli-ts": "^28.0.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",

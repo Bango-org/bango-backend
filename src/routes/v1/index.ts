@@ -9,6 +9,7 @@ import outcomeRoute from './outcome.route';
 import tokenAllocationRoute from './token-allocation.route';
 import tradeRoute from './trade.route';
 import graphRoute from './graph.route';
+import utilsRoute from './utils.route';
 
 import config from '../../config/config';
 import path from 'path';
@@ -51,6 +52,10 @@ const defaultRoutes = [
   {
     path: "/graph",
     route: graphRoute
+  },
+  {
+    path: "/utils",
+    route: utilsRoute
   }
 ];
 

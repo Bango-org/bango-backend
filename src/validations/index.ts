@@ -7,3 +7,4 @@ export { default as outcomeValidation } from './outcome.validation';
 export { default as tokenAllocatioValidation } from './token-allocation.validation';
 export { default as tradeValidation } from './trade.validation';
 export { default as graphValidation } from './graph.validation';
+export { default as utilsValidation } from './utils.validation';

@@ -61,5 +61,11 @@ export default {
       }
     },
     from: envVars.EMAIL_FROM
+  },
+  bitcoin: {
+    host: envVars.BITCOIN_HOST,
+    user: envVars.BITCOIN_USER,
+    password: envVars.BITCOIN_PASSWORD,
+    port: envVars.BITCOIN_PORT
   }
 };
