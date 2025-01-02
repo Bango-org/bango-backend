@@ -444,7 +444,7 @@ class LMSR_AMM {
     }
 
     // Get current market prices
-    public async getPrices(eventId: number) {
+    public async getPrices(eventId: number, btcPrice?: number) {
         const { shares, b, outcomes } = await this.getMarketState(eventId);
         const prices = this.calculatePrices(shares, b);
 
@@ -453,7 +453,8 @@ class LMSR_AMM {
             title: outcome.outcome_title,
             price: prices[index],
             currentSupply: outcome.current_supply,
-            totalLiquidity: outcome.total_liquidity
+            totalLiquidity: outcome.total_liquidity,
+            btcPrice: btcPrice
         }));
     }
 

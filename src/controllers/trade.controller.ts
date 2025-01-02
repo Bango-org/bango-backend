@@ -5,7 +5,7 @@ import prisma from '../client';
 import { OrderType } from '@prisma/client';
 import pick from '../utils/pick';
 import { tradeService } from '../services';
-
+import env from "../config/config";
 
 const buyTrade = catchAsync(async (req, res) => {
 
@@ -44,7 +44,7 @@ const sellTrade = catchAsync(async (req, res) => {
         res.status(StatusCodes.NOT_FOUND).send("Outcome Not Found")
         return;
     }
-    
+
     let usr: any = req.user;
     const sellResult = await amm.sellShares(eventId, outcomeId, sharesToSell, usr.id);
 
@@ -59,7 +59,7 @@ const getTrades = catchAsync(async (req, res) => {
 
     const options = pick(req.query, ['sortBy', 'limit', 'page']);
     const result = await tradeService.queryTrades(filter, options, dateFilter);
-    
+
     res.send(result);
 });
 
@@ -82,7 +82,20 @@ const getOutcomeShares = catchAsync(async (req, res) => {
 });
 
 const getOutcomePrices = catchAsync(async (req, res) => {
-    let prices =  await amm.getPrices(req.params.eventId)
+    
+    const btcUsd = await fetch(`https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?symbol=BTC&convert=USD`, {
+        method: "GET",
+        headers: {
+            'Accepts': 'application/json',
+            "X-CMC_PRO_API_KEY": env.coin_market_cap_api
+        }
+    })
+    
+    const jsn = await btcUsd.json();
+    const btcPrice = jsn.data.BTC[0].quote.USD.price
+
+    let prices = await amm.getPrices(req.params.eventId, btcPrice)
+
     res.status(StatusCodes.OK).send(prices);
 });
 

@@ -44,6 +44,7 @@ export default {
   port: envVars.PORT,
   signature_message: envVars.SIGNATURE_MESSAGE,
   azure_blob_connection_string: envVars.AZURE_BLOB_CONNECTON_STRING,
+  coin_market_cap_api: envVars.COIN_MARKET_CAP_API,
   jwt: {
     secret: envVars.JWT_SECRET,
     accessExpirationMinutes: envVars.JWT_ACCESS_EXPIRATION_MINUTES,
