@@ -26,7 +26,7 @@ router
 
 router
   .route('/')
-  .get(auth('manageTrades'), validate(tradeValidation.getTrades), tradeController.getTrades)
+  .get(validate(tradeValidation.getTrades), tradeController.getTrades)
 
 
 export default router;
