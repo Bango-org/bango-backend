@@ -5,6 +5,7 @@ import * as bip from 'bip322-js';
 import prisma from '../client';
 import ApiError from '../utils/ApiError';
 import { authenticatedBitcoind, sendToAddress } from 'bitcoin-cli-ts'
+import env from "../config/config";
 
 const bitcoind = authenticatedBitcoind({
     protocol: 'http',
@@ -17,6 +18,23 @@ const bitcoind = authenticatedBitcoind({
 })
 
 
+
+const fetchBitcoinprice = catchAsync(async (req, res) => {
+    const { walletAddress, signature } = req.body;
+
+    const btcUsd = await fetch(`https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?symbol=BTC&convert=USD`, {
+        method: "GET",
+        headers: {
+            'Accepts': 'application/json',
+            "X-CMC_PRO_API_KEY": env.coin_market_cap_api
+        }
+    })
+
+    const jsn = await btcUsd.json();
+    const btcPrice = jsn.data.BTC[0].quote.USD.price
+
+    res.status(StatusCodes.OK).send({price: btcPrice});
+});
 
 
 const sendBitcoin = catchAsync(async (req, res) => {
@@ -55,5 +73,6 @@ const sendBitcoin = catchAsync(async (req, res) => {
 
 
 export default {
-    sendBitcoin
+    sendBitcoin,
+    fetchBitcoinprice
 };

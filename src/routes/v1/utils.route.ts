@@ -10,6 +10,10 @@ router
   .route('/send-bitcoin')
   .post(auth('utils'), validate(utilsValidation.sendBitcoin), utilsController.sendBitcoin)
 
+router
+  .route('/fetch-btc-price')
+  .get(utilsController.fetchBitcoinprice)
+
 
 /**
  * @swagger
@@ -53,6 +57,21 @@ router
  *         $ref: '#/components/responses/Forbidden'
  *
  */
+
+
+/**
+ * @swagger
+ * /utils/fetch-btc-price:
+ *   get:
+ *     summary: Fetch BTC Price 
+ *     description: Fetch BTC Price
+ *     tags: [Utils]
+ *     responses:
+ *       "200":
+ *         description: Ok
+ *
+ */
+
 
 
 export default router;
