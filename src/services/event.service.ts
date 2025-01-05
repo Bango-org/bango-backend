@@ -7,6 +7,7 @@ import prisma from '../client';
  * @returns {Promise<Event>}
  */
 const createEvent = async (
+    unique_id: string,
     question: string,
     description: string,
     outcomes: string[],
@@ -25,6 +26,7 @@ const createEvent = async (
 
     return prisma.event.create({
         data: {
+            unique_id,
             question,
             description,
             resolution_criteria,

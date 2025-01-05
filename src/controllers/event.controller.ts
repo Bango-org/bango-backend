@@ -7,10 +7,10 @@ import prisma from '../client';
 import { EventStatus } from '@prisma/client';
 
 const createEvent = catchAsync(async (req, res) => {
-    const { question, description, outcomes, resolution_criteria, image, expiry_date, community } = req.body;
+    const { unique_id, question, description, outcomes, resolution_criteria, image, expiry_date, community } = req.body;
     let usr: any = req.user;
 
-    const event = await eventService.createEvent(question, description, outcomes, resolution_criteria, image, expiry_date, community, usr.wallet_address);
+    const event = await eventService.createEvent(unique_id, question, description, outcomes, resolution_criteria, image, expiry_date, community, usr.wallet_address);
     res.status(StatusCodes.CREATED).send(event);
 });
 

@@ -45,6 +45,7 @@ export default router;
  *           schema:
  *             type: object
  *             required:
+ *               - unique_id
  *               - question
  *               - description
  *               - option_a
@@ -54,6 +55,8 @@ export default router;
  *               - expiry_date
  *               - community
  *             properties:
+ *               unique_id:
+ *                 type: string
  *               question:
  *                 type: string
  *               description:
@@ -74,6 +77,7 @@ export default router;
  *                 items: 
  *                   type: string
  *             example:
+ *               unique_id: a81bc81b-dead-4e5d-abff-90865d1e13b1
  *               question: will kamla haris win this election
  *               outcomes: ['Kamla Haris', 'Doland Trump', 'Narendra Modi']
  *               resolution_criteria: Resolution will be based on US election results

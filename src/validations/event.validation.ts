@@ -2,6 +2,7 @@ import Joi from 'joi';
 
 const createEvent = {
   body: Joi.object().keys({
+    unique_id: Joi.string().required(),
     question: Joi.string().required(),
     description: Joi.string().required(),
     outcomes: Joi.array().items(Joi.string().min(1)).min(2),
