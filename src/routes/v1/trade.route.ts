@@ -19,7 +19,6 @@ router
   .route('/:eventId')
   .get(validate(tradeValidation.getOutcomePrices), tradeController.getOutcomePrices)
 
-
 router
   .route('/user-outcome-shares/:eventId')
   .get(auth('manageTrades'), validate(tradeValidation.getOutcomeShares), tradeController.getOutcomeShares)
