@@ -110,6 +110,11 @@ export default router;
  *           type: number
  *         description: Event ID
  *       - in: query
+ *         name: community
+ *         schema:
+ *           type: string
+ *         description: Event Tag
+ *       - in: query
  *         name: userID
  *         schema:
  *           type: number

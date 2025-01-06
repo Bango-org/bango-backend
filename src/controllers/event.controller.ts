@@ -15,7 +15,7 @@ const createEvent = catchAsync(async (req, res) => {
 });
 
 const getEvents = catchAsync(async (req, res) => {
-    const filter = pick(req.query, ['id', 'unique_id', 'question', 'expiry_date', 'userID', 'status', 'createdAt', 'updatedAt']);
+    const filter = pick(req.query, ['id', 'unique_id', 'question', 'expiry_date', 'userID', 'status', 'createdAt', 'updatedAt', 'community']);
     const options = pick(req.query, ['sortBy', 'limit', 'page']);
     const result = await eventService.queryEvents(filter, options);
     res.send(result);

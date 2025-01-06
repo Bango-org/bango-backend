@@ -17,9 +17,8 @@ const getEvents = {
   query: Joi.object().keys({
     id: Joi.number(),
     question: Joi.string(),
-    expiry_date: Joi.date(),
     status: Joi.string().valid('ACTIVE', 'EXPIRED', 'CLOSED'),
-    community: Joi.array().items(Joi.string().min(1)),
+    community: Joi.string().optional(),
     userID: Joi.number(),
     updatedAt: Joi.date(),
     sortBy: Joi.string(),

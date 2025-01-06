@@ -56,7 +56,7 @@ const createEvent = async (
  * @returns {Promise<QueryResult>}
  */
 const queryEvents = async <Key extends keyof Event>(
-    filter: object,
+    filter: any,
     options: {
         limit?: number;
         page?: number;
@@ -82,8 +82,21 @@ const queryEvents = async <Key extends keyof Event>(
     const limit = options.limit ?? 10;
     const sortBy = options.sortBy;
     const sortType = options.sortType ?? 'desc';
+
+    let newFilter = filter;
+    if (filter.community === null) {
+        delete newFilter.community
+    } else {
+        newFilter = {
+            ...filter,
+            community: {
+                hasSome: [filter.community]
+            }
+        }
+    }
+    
     const events: any = await prisma.event.findMany({
-        where: filter,
+        where: newFilter,
         select: {
             ...keys.reduce((obj, k) => ({ ...obj, [k]: true }), {}),
             outcomes: {
@@ -105,7 +118,7 @@ const queryEvents = async <Key extends keyof Event>(
                     threads: true,
                     trades: true
                 }
-            }
+            },
         },
         skip: (page - 1) * limit,
         take: limit,
