@@ -84,9 +84,7 @@ const queryEvents = async <Key extends keyof Event>(
     const sortType = options.sortType ?? 'desc';
 
     let newFilter = filter;
-    if (filter.community === null) {
-        delete newFilter.community
-    } else {
+    if (filter.community !== undefined) {
         newFilter = {
             ...filter,
             community: {
@@ -94,7 +92,7 @@ const queryEvents = async <Key extends keyof Event>(
             }
         }
     }
-    
+
     const events: any = await prisma.event.findMany({
         where: newFilter,
         select: {
