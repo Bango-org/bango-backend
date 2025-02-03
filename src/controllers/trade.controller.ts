@@ -83,16 +83,20 @@ const getOutcomeShares = catchAsync(async (req, res) => {
 
 const getOutcomePrices = catchAsync(async (req, res) => {
     
-    const btcUsd = await fetch(`https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?symbol=BTC&convert=USD`, {
+    // const btcUsd = await fetch(`https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?symbol=BTC&convert=USD`, {
+    //     method: "GET",
+    //     headers: {
+    //         'Accepts': 'application/json',
+    //         "X-CMC_PRO_API_KEY": env.coin_market_cap_api
+    //     }
+    // })
+
+    const btcUsd = await fetch(`https://api.diadata.org/v1/assetQuotation/Bitcoin/0x0000000000000000000000000000000000000000`, {
         method: "GET",
-        headers: {
-            'Accepts': 'application/json',
-            "X-CMC_PRO_API_KEY": env.coin_market_cap_api
-        }
     })
-    
+
     const jsn = await btcUsd.json();
-    const btcPrice = jsn.data.BTC[0].quote.USD.price
+    const btcPrice = jsn.Price;
 
     let prices = await amm.getPrices(req.params.eventId, btcPrice)
 
