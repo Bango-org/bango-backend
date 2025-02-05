@@ -1,63 +1,42 @@
 import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../utils/catchAsync';
-import { authService, userService, tokenService, emailService } from '../services';
+import { authService } from '../services';
 import config from "../config/config";
-import prisma from '../client';
 import { generator } from '../utils/username-gen';
-import * as bip from 'bip322-js';
-import * as web3 from "web3";
 import e from 'express';
+import { privy } from '../privy';
+import prisma from '../client';
 
-const login = catchAsync(async (req, res) => {
-  const { walletAddress, signature, signatureType } = req.body;
+const register = catchAsync(async (req, res) => {
+  const authToken = req.headers.authorization;
 
+  if (authToken === undefined || authToken === null ) {
+    res.send({})
+    return;
+  }
+  const verifiedClaims = await privy.verifyAuthToken(authToken!);
+  const privyUser = await privy.getUserById(verifiedClaims.userId)
 
-  // Verify Signature
-  if (signatureType === "bitcoin") {
+  const user = await prisma.user.findFirst({
+    where: { wallet_address:  privyUser.wallet?.address}
+  });
 
-    const isValid = bip.Verifier.verifySignature(walletAddress, config.signature_message, signature)
-
-    if (!isValid) {
-      res.status(400).send("INVALID SIGNATURE");
-      return;
-    }
-
-  } else {
-
-    let address = web3.eth.accounts.recover(config.signature_message, signature);
-    console.log(address)
-
-    if (address !== walletAddress) {
-      res.status(400).send("INVALID SIGNATURE");
-      return;
-    }
-
+  if (user) {
+    res.send({"message": "User already exists"})
+    return
   }
 
+  const username = generator.generateWithNumber();
 
-  // Find user if exiss
-  let user = await prisma.user.findFirst({
-    where: {
-      wallet_address: walletAddress
+  await prisma.user.create({
+    data: {
+      username:  username,
+      about: `Hey I am ${username} and i love Bango`,
+      wallet_address: privyUser.wallet?.address! 
     }
   })
 
-  // Create new user if does not exists
-  if (user === null) {
-
-    user = await prisma.user.create({
-      data: {
-        username: generator.generateWithNumber(),
-        about: "",
-        wallet_address: walletAddress
-      }
-    });
-
-  }
-
-  // Generate new Auth Token
-  const tokens = await tokenService.generateAuthTokens(user);
-  res.send({ user, tokens });
+  res.send({"message": "Registered"});
 });
 
 const logout = catchAsync(async (req, res) => {
@@ -72,7 +51,7 @@ const refreshTokens = catchAsync(async (req, res) => {
 
 
 export default {
-  login,
+  register,
   logout,
   refreshTokens,
 };

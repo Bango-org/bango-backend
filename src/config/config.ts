@@ -68,5 +68,9 @@ export default {
     user: envVars.BITCOIN_USER,
     password: envVars.BITCOIN_PASSWORD,
     port: envVars.BITCOIN_PORT
+  },
+  privy: {
+    app_id: envVars.PRIVY_APP_ID,
+    app_secret: envVars.PRIVY_APP_SECRET
   }
 };

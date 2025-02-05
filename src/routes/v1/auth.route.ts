@@ -5,7 +5,7 @@ import { authController } from '../../controllers';
 
 const router = express.Router();
 
-router.post('/get-token', validate(authValidation.login), authController.login);
+router.post('/register', authController.register);
 router.post('/logout', validate(authValidation.logout), authController.logout);
 router.post(
   '/refresh-tokens',
@@ -25,30 +25,12 @@ export default router;
 
 /**
  * @swagger
- * /auth/get-token:
+ * /auth/register:
  *   post:
  *     summary: Get Auth Token
  *     tags: [Auth]
  *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - walletAddress
- *               - signature
- *             properties:
- *               walletAddress:
- *                 type: string
- *               signature:
- *                 type: string
- *               signatureType:
- *                 type: string
- *             example:
- *               walletAddress: "0x375C11FD30FdC95e10aAD66bdcE590E1bccc6aFA"
- *               signature: "0xe1a2e9174cb8021fbc14bc7e272561572126ed23e97f2232d5ef2de44405291a73b746a5cc5ef82a927f95013dd1fc4393c44b89b8ed84e7a13f4cf922d845161c"
- *               signatureType: "bitcoin/ethereum"
+ *       required: false
  *     responses:
  *       "200":
  *         description: OK

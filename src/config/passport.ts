@@ -1,18 +1,19 @@
 import prisma from '../client';
-import { Strategy as JwtStrategy, ExtractJwt, VerifyCallback } from 'passport-jwt';
-import config from './config';
-import { TokenType } from '@prisma/client';
+import { Request } from "express";
+import { privy } from '../privy';
+import { Strategy as CustomStrategy } from "passport-custom";
 
-const jwtOptions = {
-  secretOrKey: config.jwt.secret,
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken()
-};
-
-const jwtVerify: VerifyCallback = async (payload, done) => {
+const jwtVerify = async (req: Request, done: any) => {
   try {
-    if (payload.type !== TokenType.ACCESS) {
-      throw new Error('Invalid token type');
+    const authToken = req.headers.authorization;
+    
+    if (!authToken || !authToken.startsWith("Bearer ")) {
+      return done(null, false, { message: "No token provided" })
     }
+    
+    const verifiedClaims = await privy.verifyAuthToken(authToken!);
+    const privyUser = await privy.getUserById(verifiedClaims.userId)
+    
     const user = await prisma.user.findUnique({
       select: {
         id: true,
@@ -20,15 +21,21 @@ const jwtVerify: VerifyCallback = async (payload, done) => {
         role: true,
         wallet_address: true
       },
-      where: { id: payload.sub }
-    });
+      where: { wallet_address: privyUser.wallet?.address! }
+    })
+    console.log("=====", privyUser.wallet?.address!)
+
+    console.log(user)
     if (!user) {
       return done(null, false);
     }
+
     done(null, user);
+
   } catch (error) {
     done(error, false);
   }
 };
 
-export const jwtStrategy = new JwtStrategy(jwtOptions, jwtVerify);
+
+export const jwtStrategy = new CustomStrategy(jwtVerify);
