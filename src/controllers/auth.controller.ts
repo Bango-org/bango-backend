@@ -17,18 +17,18 @@ const register = catchAsync(async (req, res) => {
   const verifiedClaims = await privy.verifyAuthToken(authToken!);
   const privyUser = await privy.getUserById(verifiedClaims.userId)
 
-  const user = await prisma.user.findFirst({
+  let user = await prisma.user.findFirst({
     where: { wallet_address:  privyUser.wallet?.address}
   });
 
   if (user) {
-    res.send({"message": "User already exists"})
+    res.send(user)
     return
   }
 
   const username = generator.generateWithNumber();
 
-  await prisma.user.create({
+  user = await prisma.user.create({
     data: {
       username:  username,
       about: `Hey I am ${username} and i love Bango`,
@@ -36,7 +36,7 @@ const register = catchAsync(async (req, res) => {
     }
   })
 
-  res.send({"message": "Registered"});
+  res.send(user);
 });
 
 const logout = catchAsync(async (req, res) => {
