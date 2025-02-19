@@ -6,16 +6,22 @@ import { generator } from '../utils/username-gen';
 import e from 'express';
 import { privy } from '../privy';
 import prisma from '../client';
+import ApiError from '../utils/ApiError';
 
 const register = catchAsync(async (req, res) => {
   const authToken = req.headers.authorization;
 
   if (authToken === undefined || authToken === null ) {
-    res.send({})
-    return;
+    throw new ApiError(StatusCodes.UNAUTHORIZED,'Please pass authentication token');
   }
-  const verifiedClaims = await privy.verifyAuthToken(authToken!);
-  const privyUser = await privy.getUserById(verifiedClaims.userId)
+
+  let privyUser = null
+  try {
+    const verifiedClaims = await privy.verifyAuthToken(authToken!);
+    privyUser = await privy.getUserById(verifiedClaims.userId)
+  } catch {
+    throw new ApiError(StatusCodes.UNAUTHORIZED,'Invalid Token');
+  }
 
   let user = await prisma.user.findFirst({
     where: { wallet_address:  privyUser.wallet?.address}
